@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  calidad:
+    name: Lint, tipos, tests y build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: charla
+          POSTGRES_PASSWORD: charla_ci
+          POSTGRES_DB: charla
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U charla -d charla"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    env:
+      DATABASE_URL: postgres://charla:charla_ci@localhost:5432/charla
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:integration
+      - run: npm run build
+
+  arranque:
+    name: Arranque local con un comando
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Levantar el entorno con npm run dev
+        run: nohup npm run dev > dev.log 2>&1 &
+      - name: Esperar que /health responda 200
+        run: |
+          for attempt in $(seq 1 45); do
+            if curl --silent --fail http://localhost:3000/health; then exit 0; fi
+            sleep 2
+          done
+          cat dev.log
+          exit 1
