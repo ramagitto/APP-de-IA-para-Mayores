@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+*.log
+
+# Secretos: nunca al repositorio. Las variables se documentan en .env.example.
+.env
+.env.*
+!.env.example
