@@ -1,0 +1,21 @@
+# Base de datos para desarrollo local. Estas credenciales solo sirven en tu máquina.
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: charla
+      POSTGRES_PASSWORD: charla_local
+      POSTGRES_DB: charla
+    ports:
+      # 5433 para no chocar con un Postgres que ya esté instalado en la máquina.
+      - '5433:5432'
+    volumes:
+      - charla-db:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U charla -d charla']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  charla-db:
