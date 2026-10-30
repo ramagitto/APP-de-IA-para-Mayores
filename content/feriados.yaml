@@ -1,0 +1,21 @@
+# Días sin lección: no se manda recordatorio y no cortan la racha.
+#
+# Solo están los feriados inamovibles de 2027 cercanos al piloto (Ley 27.399).
+# Faltan los trasladables y los días no laborables con fines turísticos, porque el calendario
+# oficial de 2027 todavía no estaba publicado al 30/10/2026.
+# PENDIENTE: confirmar en argentina.gob.ar cuando se fije la fecha del piloto.
+feriados:
+  - fecha: 2027-03-24
+    nombre: Día Nacional de la Memoria por la Verdad y la Justicia
+  - fecha: 2027-03-26
+    nombre: Viernes Santo
+  - fecha: 2027-04-02
+    nombre: Día del Veterano y de los Caídos en la Guerra de Malvinas
+  - fecha: 2027-05-01
+    nombre: Día del Trabajador
+  - fecha: 2027-05-25
+    nombre: Día de la Revolución de Mayo
+  - fecha: 2027-06-20
+    nombre: Paso a la Inmortalidad del General Manuel Belgrano
+  - fecha: 2027-07-09
+    nombre: Día de la Independencia

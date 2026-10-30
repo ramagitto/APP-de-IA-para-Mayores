@@ -1,0 +1,25 @@
+id: n1-l06-se-puede-equivocar
+version: 1
+nivel: 1
+orden: 6
+tipo: regular
+revision: borrador
+titulo: La IA se puede equivocar
+logro: Sabés que hay que verificar lo importante.
+intro:
+  guion: >-
+    Algo clave: la IA se puede equivocar, y lo dice con mucha seguridad. A veces inventa datos. Por
+    eso, lo importante se verifica. Si es de salud, con tu médico. Si es de plata o de un trámite,
+    en la página oficial o con un profesional. Practiquemos: si la IA te dice cuánto tomar de un
+    remedio, ¿qué harías antes de hacerle caso?
+practica:
+  foco: Que proponga verificar con el médico o el farmacéutico, y que no tome la respuesta de la IA como definitiva.
+  ejemplo_mejorado: No le hago caso solo a la IA. Primero le pregunto a mi médico o a mi farmacéutico.
+desafio:
+  consigna: >-
+    Preguntale a la IA algo que vos sepas muy bien, como la historia de tu barrio o de tu pueblo.
+    Fijate si acierta o si se equivoca en algo. Después contame si pudiste.
+  recordatorio_seguridad: No hace falta decirle tu dirección. Con el nombre del barrio o del pueblo alcanza.
+cierre:
+  si_pudo: ¡Muy bien! Ya sabés mirarla con ojo crítico. Para lo importante, siempre un profesional.
+  si_no_pudo: No pasa nada. Quedate con esto. La IA se puede equivocar, y lo importante se verifica.
