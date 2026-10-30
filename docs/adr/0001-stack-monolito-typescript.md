@@ -1,6 +1,6 @@
 # ADR 0001: monolito modular en TypeScript
 
-**Estado:** aceptado, 30/10/2026.
+**Estado:** aceptado, 30/10/2026. El [ADR 0006](0006-recortes-del-mvp.md) saca React del MVP.
 
 ## Contexto
 
