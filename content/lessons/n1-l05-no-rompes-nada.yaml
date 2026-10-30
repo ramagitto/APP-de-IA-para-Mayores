@@ -1,0 +1,25 @@
+id: n1-l05-no-rompes-nada
+version: 1
+nivel: 1
+orden: 5
+tipo: regular
+revision: borrador
+titulo: No rompés nada
+logro: Te animaste a preguntar sin miedo y a empezar de nuevo.
+intro:
+  guion: >-
+    Mucha gente tiene miedo de romper algo. Te doy una tranquilidad: preguntarle algo a la IA no
+    rompe el teléfono ni borra nada. Si una respuesta no te sirve, le pedís otra cosa y listo. Y no
+    existen las preguntas tontas: a la IA no le molesta ni se cansa de repetir. Practiquemos: decime
+    algo que siempre quisiste preguntar y te dio vergüenza.
+practica:
+  foco: Que se anime a preguntar lo que sea, sin pedir disculpas. Celebrar el coraje antes de mejorar la forma.
+  ejemplo_mejorado: Nunca entendí para qué sirve la nube del celular. ¿Me lo explicás con palabras simples?
+desafio:
+  consigna: >-
+    Hacele esa pregunta a la IA, sin apuro. Si la respuesta no te gusta, escribile: "No me sirvió,
+    probá de otra forma". Después contame si pudiste.
+  recordatorio_seguridad: Preguntá lo que quieras, pero sin escribir claves ni datos privados.
+cierre:
+  si_pudo: ¡Qué bien! Preguntar sin miedo es la mitad del camino.
+  si_no_pudo: Está perfecto ir despacio. Lo probamos otro día, y no se rompió nada.

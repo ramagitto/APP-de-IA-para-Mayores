@@ -4,6 +4,26 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ## [Sin publicar]
 
+### Fase 1: dominio y contenido
+
+#### Agregado
+
+- Motor de lecciones como máquina de estados: intro, práctica, desafío y cierre, con tope de 5 mensajes pagos.
+- Rachas sin castigo, sobre lecciones de lunes a viernes, con feriados y hora de Buenos Aires.
+- Progreso por nivel y selección de la próxima lección.
+- Formato de lección en YAML, con validador y control en la CI.
+- 10 lecciones en borrador: 8 regulares y 2 antiestafas.
+- Tablas `users`, `consents`, `lesson_attempts` y `streaks`, con migración y datos de prueba.
+- Teléfonos cifrados con AES-256-GCM y búsqueda por HMAC.
+- Recorrido de una lección por consola, con un tutor simulado.
+- Registro de horas, checklist del trámite de Meta y guía para revisar lecciones.
+- ADR de los recortes del MVP y del motor de lecciones.
+
+#### Cambiado
+
+- `npm run dev` aplica las migraciones al arrancar.
+- `APP_ENV` admite solo `local` y `production`, porque no hay staging.
+
 ### Fase 0: esqueleto
 
 #### Agregado

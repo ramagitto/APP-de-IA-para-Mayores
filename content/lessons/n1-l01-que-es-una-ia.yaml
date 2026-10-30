@@ -1,0 +1,26 @@
+id: n1-l01-que-es-una-ia
+version: 1
+nivel: 1
+orden: 1
+tipo: regular
+revision: borrador
+titulo: Qué es una IA
+logro: Hiciste tu primer pedido a una inteligencia artificial.
+intro:
+  guion: >-
+    Hola, ¿cómo andás? Soy Charlá. Te voy a acompañar a aprender a usar la inteligencia artificial,
+    que le decimos IA. Una IA es un programa con el que se conversa, como en un chat. Le pedís algo
+    y te contesta. Hoy practicamos conmigo, sin ningún riesgo. Contame: si una IA te pudiera ayudar
+    con la cocina, ¿qué le pedirías? Mandame un audio o escribime.
+practica:
+  foco: Que el pedido diga qué quiere la persona. No hace falta que sea perfecto, lo importante es animarse.
+  ejemplo_mejorado: Tengo papas y huevos. ¿Qué puedo cocinar hoy en menos de media hora?
+desafio:
+  consigna: >-
+    Si ya tenés una IA a mano, como Meta AI en WhatsApp, ChatGPT o Gemini, probá hacerle ese mismo
+    pedido. Si todavía no la encontrás, no te preocupes: en la próxima lección vemos dónde está.
+    Después contame si pudiste.
+  recordatorio_seguridad: Acordate de no darle a la IA claves, códigos ni números de documento o de cuenta.
+cierre:
+  si_pudo: ¡Felicitaciones! Ya hiciste tu primer pedido a una IA. En la próxima lección seguimos.
+  si_no_pudo: No pasa nada. En la próxima lección vemos juntos dónde encontrarla. Por hoy, ya hiciste mucho.

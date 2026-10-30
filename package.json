@@ -17,17 +17,25 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/shared/db/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "lessons:check": "tsx scripts/check-lessons.ts",
+    "lesson:play": "tsx scripts/play-lesson.ts"
   },
   "dependencies": {
+    "drizzle-orm": "^0.45.4",
     "fastify": "^5.12.7",
     "pg": "^8.23.1",
+    "yaml": "^2.9.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.19.2",
     "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^10.14.0",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
