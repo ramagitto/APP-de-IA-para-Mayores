@@ -1,0 +1,25 @@
+id: n1-l08-explicame-facil
+version: 1
+nivel: 1
+orden: 8
+tipo: regular
+revision: borrador
+titulo: Explicame fácil
+logro: Aprendiste a pedir que te expliquen las cosas con palabras simples.
+intro:
+  guion: >-
+    Hoy, un truco que sirve para casi todo. A veces la IA contesta con palabras difíciles. Para
+    evitarlo, le agregás al pedido: "explicame como si no supiera nada". Mirá la diferencia: no es lo
+    mismo decir "qué es la inflación" que "explicame qué es la inflación como si no supiera nada, con
+    un ejemplo del supermercado". Practiquemos: pedí que te expliquen algo con ese truco.
+practica:
+  foco: Que agregue al pedido "explicame como si no supiera nada" o algo parecido y, si puede, que pida un ejemplo.
+  ejemplo_mejorado: Explicame qué es una billetera virtual como si no supiera nada, con un ejemplo de todos los días.
+desafio:
+  consigna: >-
+    Hacele a la IA ese mismo pedido, con el truco incluido. Si algo no te queda claro, pedile otro
+    ejemplo. Después contame si pudiste.
+  recordatorio_seguridad: Preguntar cómo funciona algo es seguro. Lo que no hace falta es darle tus claves o cuentas.
+cierre:
+  si_pudo: ¡Muy bien! Este truco te va a servir siempre. Usalo sin vergüenza.
+  si_no_pudo: No pasa nada. El truco queda acá, y lo podés probar cuando quieras.

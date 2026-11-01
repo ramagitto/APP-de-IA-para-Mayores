@@ -81,6 +81,8 @@ Al escalar, la meta queda justa. La palanca principal es reutilizar frases ya ge
 - [ ] Moneda de facturación confirmada. Recomendamos pesos: el mensaje sale un 6,5% menos que en dólares al oficial de hoy.
 - [ ] Nombre visible aprobado por Meta.
 
+El paso a paso, con los textos de las plantillas, está en la [checklist del trámite de Meta](tramite-meta.md).
+
 ## Migrar a una cuenta institucional
 
 Según la [guía de Meta](https://developers.facebook.com/documentation/business-messaging/whatsapp/solution-providers/support/migrating-phone-numbers-among-solution-partners-via-embedded-signup.md), el número conserva nombre visible, calidad y límite de mensajes. Las plantillas se recrean y su calificación vuelve a cero. La guía está pensada para socios de Meta, así que falta confirmar que aplique a nuestro caso.

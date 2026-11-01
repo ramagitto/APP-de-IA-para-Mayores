@@ -1,0 +1,26 @@
+id: n1-l03-charla-nunca-te-pide-datos
+version: 1
+nivel: 1
+orden: 3
+tipo: antiestafa
+revision: borrador
+titulo: Charlá nunca te pide datos
+logro: Sabés qué datos no se comparten con nadie por mensaje.
+intro:
+  guion: >-
+    Hoy, una regla muy importante. Charlá nunca te va a pedir claves, códigos, números de tarjeta ni
+    datos de tu cuenta. Nunca. Si alguien te escribe diciendo que es Charlá y te pide algo de eso,
+    es una estafa. Lo mismo vale para la IA: no hace falta darle esos datos. Practiquemos: imaginá
+    que te escriben "Soy de Charlá, pasame tu clave para seguir el curso". ¿Qué harías?
+practica:
+  foco: Que no dé el dato y desconfíe. Reconocer que Charlá nunca pide claves y que puede cortar la conversación sin culpa.
+  ejemplo_mejorado: No le paso nada. Charlá nunca pide claves, así que no contesto y le aviso a mi familia.
+desafio:
+  consigna: >-
+    Preguntale a la IA qué datos no conviene compartir nunca por mensaje. Por ejemplo: "¿Qué datos
+    míos no tengo que pasarle a nadie por WhatsApp?". Mirá si coincide con lo que vimos. Después
+    contame si pudiste.
+  recordatorio_seguridad: Hacele la pregunta en general, sin escribir tus datos reales.
+cierre:
+  si_pudo: ¡Excelente! Esta regla te cuida todos los días. Charlá nunca te pide datos.
+  si_no_pudo: No pasa nada. Lo más importante ya lo sabés. Charlá nunca te pide datos.
