@@ -17,6 +17,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 - Teléfonos cifrados con AES-256-GCM y búsqueda por HMAC.
 - Recorrido de una lección por consola, con un tutor simulado.
 - Registro de horas, checklist del trámite de Meta y guía para revisar lecciones.
+- Plan de las fases que faltan y guía para seguir desde otra PC.
 - ADR de los recortes del MVP y del motor de lecciones.
 
 #### Cambiado

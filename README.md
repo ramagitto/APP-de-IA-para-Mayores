@@ -67,6 +67,8 @@ docs/               Arquitectura, costos y decisiones (ADR)
 
 ## Documentación
 
+- [Cómo seguir desde otra PC](docs/continuar-en-otra-pc.md)
+- [Plan de fases](docs/plan-de-fases.md)
 - [Arquitectura y modelo de datos](docs/arquitectura.md)
 - [WhatsApp: reglas, tarifas y costos](docs/whatsapp-y-costos.md)
 - [Checklist del trámite de Meta](docs/tramite-meta.md)

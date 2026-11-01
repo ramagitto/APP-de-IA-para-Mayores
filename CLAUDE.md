@@ -56,3 +56,6 @@ Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios
 ## Estado
 
 Fase 1: dominio y contenido, en revisión. Las 10 lecciones están en borrador, a la espera del rol de contenidos.
+
+- **Plan de las fases que faltan, con sus criterios:** [docs/plan-de-fases.md](docs/plan-de-fases.md).
+- **Dónde quedamos y qué falta decidir:** [docs/continuar-en-otra-pc.md](docs/continuar-en-otra-pc.md).
