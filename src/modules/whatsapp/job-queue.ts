@@ -23,13 +23,17 @@ export const INBOUND_QUEUE = 'whatsapp-inbound';
 export class PgBossQueue implements JobQueue {
   private readonly boss: PgBoss;
 
-  constructor(connectionString: string) {
+  constructor(
+    connectionString: string,
+    // Los tests usan otro nombre, para que ningún otro proceso les tome los trabajos.
+    private readonly queueName = INBOUND_QUEUE,
+  ) {
     this.boss = new PgBoss(connectionString);
   }
 
   async start(handler: JobHandler): Promise<void> {
     await this.boss.start();
-    await this.boss.createQueue(INBOUND_QUEUE, {
+    await this.boss.createQueue(this.queueName, {
       // Si falla (por ejemplo, WhatsApp no responde), reintenta con esperas crecientes.
       retryLimit: 5,
       retryDelay: 10,
@@ -37,14 +41,14 @@ export class PgBossQueue implements JobQueue {
       // Los datos del trabajo son solo un id, pero igual se borran pronto.
       deleteAfterSeconds: 24 * 60 * 60,
     });
-    await this.boss.work<{ eventId: string }>(INBOUND_QUEUE, async (jobs) => {
+    await this.boss.work<{ eventId: string }>(this.queueName, async (jobs) => {
       for (const job of jobs) await handler(job.data.eventId);
     });
   }
 
   async send(eventId: string): Promise<void> {
     // singletonKey evita encolar dos veces el mismo mensaje.
-    await this.boss.send(INBOUND_QUEUE, { eventId }, { singletonKey: eventId });
+    await this.boss.send(this.queueName, { eventId }, { singletonKey: eventId });
   }
 
   async stop(): Promise<void> {

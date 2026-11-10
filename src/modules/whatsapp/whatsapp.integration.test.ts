@@ -233,7 +233,7 @@ describe('WhatsAppProcessor', () => {
 
 describe('PgBossQueue', () => {
   it('entrega los trabajos al procesador', async () => {
-    const queue = new PgBossQueue(env.DATABASE_URL);
+    const queue = new PgBossQueue(env.DATABASE_URL, `prueba-${randomUUID()}`);
     const received: string[] = [];
     await queue.start(async (eventId) => {
       received.push(eventId);
