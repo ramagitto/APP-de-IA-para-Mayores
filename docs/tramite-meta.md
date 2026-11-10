@@ -48,34 +48,17 @@ Definir entre el grupo, y dejarlo por escrito fuera de este repositorio:
 
 Solo hacen falta para escribirle a alguien fuera de la ventana de 24 horas. Meta revisa cada una, y **puede tardar hasta 24 horas** por revisión. Las apelaciones también se resuelven en 24 horas.
 
-Reglas que hay que respetar:
-
-- Una plantilla no puede empezar ni terminar con una variable.
-- Las variables van numeradas en orden: `{{1}}`, `{{2}}`.
-- Hay que cargar un valor de ejemplo para cada variable. Usá un nombre inventado.
-- No puede pedir datos sensibles completos.
-- Esperá que Meta las clasifique como **marketing**: el contenido educativo no suele calificar como utility. Si queda como marketing, cuesta ARS 89,56 por envío.
-
-### Textos propuestos
-
-Son un borrador. Los revisa contenidos antes de enviarlos. Si Meta pide cambios, actualizá este archivo: las plantillas viven acá para poder recrearlas si se migra el número.
-
-**`charla_recordatorio`** (recordatorio del día, máximo 1 por día)
-
-> Hola {{1}}, tu lección de hoy de Charlá te está esperando. Son unos 3 minutos. Cuando quieras, contestá este mensaje y arrancamos. Si no querés recibir más mensajes, escribí BAJA.
-
-**`charla_repaso`** (repaso del día 30)
-
-> Hola {{1}}, pasó un tiempo desde tu curso de Charlá. Preparamos un repaso cortito, de unos 3 minutos. Si querés hacerlo, contestá este mensaje. Si no querés recibir más mensajes, escribí BAJA.
+Los textos listos para enviar, cómo cargarlos y las reglas que cumplen están en **[plantillas-whatsapp.md](plantillas-whatsapp.md)**. Son tres: `charla_recordatorio`, `charla_repaso` y `charla_respuesta_equipo`. No llevan el nombre de la persona, porque no lo guardamos.
 
 - [ ] Revisar los textos con contenidos.
-- [ ] Cargarlos en WhatsApp Manager, en español de Argentina si está disponible, con un ejemplo para `{{1}}`.
+- [ ] Cargarlos en WhatsApp Manager, en Spanish (ARG), código `es_AR`.
 - [ ] Anotar acá la categoría que asignó Meta y el estado:
 
-| Plantilla             | Estado | Categoría asignada | Costo por envío |
-| --------------------- | ------ | ------------------ | --------------- |
-| `charla_recordatorio` |        |                    |                 |
-| `charla_repaso`       |        |                    |                 |
+| Plantilla                 | Estado | Categoría asignada | Costo por envío |
+| ------------------------- | ------ | ------------------ | --------------- |
+| `charla_recordatorio`     |        |                    |                 |
+| `charla_repaso`           |        |                    |                 |
+| `charla_respuesta_equipo` |        |                    |                 |
 
 ## 6. Para el futuro: migración a una cuenta institucional
 
