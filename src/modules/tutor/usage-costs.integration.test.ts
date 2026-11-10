@@ -4,6 +4,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { loadEnv } from '../../config/env.js';
 import { createDatabase, createOrm } from '../../shared/db/database.js';
 import { usageCosts } from '../../shared/db/schema.js';
+import { phoneContact } from '../users/contact.js';
 import { phoneKeysFromBase64 } from '../users/phone.js';
 import { createUser, deleteUser } from '../users/users.repository.js';
 import { DbCostLedger } from './usage-costs.repository.js';
@@ -16,7 +17,9 @@ const ledger = new DbCostLedger(orm);
 const usage = { inputTokens: 1200, outputTokens: 150, cacheReadTokens: 900, cacheWriteTokens: 0 };
 
 async function newUserId(): Promise<string> {
-  const user = await createUser(orm, keys, { phone: `+549110${randomInt(1_000_000, 9_999_999)}` });
+  const user = await createUser(orm, keys, {
+    contact: phoneContact(`+549110${randomInt(1_000_000, 9_999_999)}`),
+  });
   return user.id;
 }
 

@@ -32,13 +32,15 @@ export const lessonTrigger = pgEnum('lesson_trigger', ['user_message', 'reminder
 
 export const challengeOutcome = pgEnum('challenge_outcome', ['done', 'not_done']);
 
-// El teléfono se guarda cifrado. El hash permite buscarlo sin descifrar toda la tabla.
+// El contacto (teléfono o id de WhatsApp, ver users/contact.ts) se guarda cifrado. El hash
+// permite buscarlo sin descifrar toda la tabla. Las columnas conservan el nombre "phone" de la
+// Fase 1, para no migrar datos; en el código se llaman "contact".
 export const users = pgTable(
   'users',
   {
     id: uuid().primaryKey().defaultRandom(),
-    phoneHash: text('phone_hash').notNull().unique(),
-    phoneEncrypted: text('phone_encrypted').notNull(),
+    contactHash: text('phone_hash').notNull().unique(),
+    contactEncrypted: text('phone_encrypted').notNull(),
     firstName: text('first_name'),
     reminderHour: smallint('reminder_hour').notNull().default(10),
     status: userStatus().notNull().default('onboarding'),
@@ -122,4 +124,71 @@ export const usageCosts = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index('usage_costs_user_day').on(table.userId, table.day)],
+);
+
+// Alta en curso, antes del consentimiento. Guarda lo mínimo: el hash del contacto y cuántas
+// veces se pidió el consentimiento. Si la persona no acepta, se borra.
+export const pendingSignups = pgTable('pending_signups', {
+  contactHash: text('contact_hash').primaryKey(),
+  promptsSent: smallint('prompts_sent').notNull().default(1),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+});
+
+export const supportReason = pgEnum('support_reason', ['ayuda', 'care']);
+export const supportStatus = pgEnum('support_status', ['open', 'closed']);
+
+// Pedidos de hablar con una persona del equipo: la palabra AYUDA o un mensaje de cuidado.
+// Se guarda el contacto cifrado, porque hace falta para responder.
+export const supportRequests = pgTable(
+  'support_requests',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    contactHash: text('contact_hash').notNull(),
+    contactEncrypted: text('contact_encrypted').notNull(),
+    reason: supportReason().notNull(),
+    status: supportStatus().notNull().default('open'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+  },
+  (table) => [index('support_requests_status').on(table.status, table.createdAt)],
+);
+
+export const inboundStatus = pgEnum('inbound_status', ['received', 'processed', 'ignored']);
+
+// Mensajes que llegan por el webhook. El id del proveedor es único: si Meta reintenta, no se
+// procesa dos veces. El contenido va cifrado y se borra apenas se procesa.
+export const inboundEvents = pgTable('inbound_events', {
+  id: uuid().primaryKey().defaultRandom(),
+  providerMessageId: text('provider_message_id').notNull().unique(),
+  contactHash: text('contact_hash').notNull(),
+  payloadEncrypted: text('payload_encrypted'),
+  status: inboundStatus().notNull().default('received'),
+  receivedAt: timestamp('received_at', { withTimezone: true }).notNull(),
+  processedAt: timestamp('processed_at', { withTimezone: true }),
+});
+
+export const outboundStatus = pgEnum('outbound_status', ['pending', 'sent']);
+
+// Respuestas, guardadas antes de enviarlas: si un envío falla, el reintento manda solo las que
+// faltan y no vuelve a correr la lección. El texto cifrado se borra al enviar.
+export const outboundMessages = pgTable(
+  'outbound_messages',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    inboundEventId: uuid('inbound_event_id')
+      .notNull()
+      .references(() => inboundEvents.id, { onDelete: 'cascade' }),
+    position: smallint().notNull(),
+    contactHash: text('contact_hash').notNull(),
+    kind: text().notNull(),
+    bodyEncrypted: text('body_encrypted'),
+    audioId: text('audio_id'),
+    status: outboundStatus().notNull().default('pending'),
+    providerMessageId: text('provider_message_id'),
+    sentAt: timestamp('sent_at', { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex('outbound_messages_event_position').on(table.inboundEventId, table.position),
+  ],
 );

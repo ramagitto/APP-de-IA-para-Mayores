@@ -8,8 +8,9 @@ import { consents, lessonAttempts, streaks, users } from '../../shared/db/schema
 import { hasActiveConsent, recordConsent, revokeConsent } from '../consent/consent.repository.js';
 import { saveStreak, getStreak } from '../streaks/streaks.repository.js';
 import { EMPTY_STREAK } from '../streaks/streak.js';
-import { decryptPhone, phoneKeysFromBase64 } from '../users/phone.js';
-import { createUser, deleteUser, findUserByPhone } from '../users/users.repository.js';
+import { decryptContact, phoneContact } from '../users/contact.js';
+import { phoneKeysFromBase64 } from '../users/phone.js';
+import { createUser, deleteUser, findUserByContact } from '../users/users.repository.js';
 import { applyPracticeReview, startAttempt } from './lesson-attempt.js';
 import {
   findOpenAttempt,
@@ -31,7 +32,10 @@ function fakePhone(): string {
 async function newUser() {
   const phone = fakePhone();
 
-  return { phone, user: await createUser(orm, keys, { phone, firstName: 'Prueba' }) };
+  return {
+    phone,
+    user: await createUser(orm, keys, { contact: phoneContact(phone), firstName: 'Prueba' }),
+  };
 }
 
 function startedAttempt() {
@@ -44,16 +48,16 @@ describe('usuarios', () => {
   it('guarda el teléfono cifrado y lo encuentra por hash', async () => {
     const { phone, user } = await newUser();
 
-    expect(user.phoneEncrypted).not.toContain(phone.slice(1));
-    expect(user.phoneHash).not.toContain(phone.slice(1));
-    expect(decryptPhone(user.phoneEncrypted, keys)).toBe(phone);
-    expect((await findUserByPhone(orm, keys, phone))?.id).toBe(user.id);
+    expect(user.contactEncrypted).not.toContain(phone.slice(1));
+    expect(user.contactHash).not.toContain(phone.slice(1));
+    expect(decryptContact(user.contactEncrypted, keys)).toBe(phoneContact(phone));
+    expect((await findUserByContact(orm, keys, phoneContact(phone)))?.id).toBe(user.id);
   });
 
   it('no permite dos usuarios con el mismo teléfono', async () => {
     const { phone } = await newUser();
 
-    await expect(createUser(orm, keys, { phone })).rejects.toThrow();
+    await expect(createUser(orm, keys, { contact: phoneContact(phone) })).rejects.toThrow();
   });
 
   it('borrar un usuario borra todos sus datos', async () => {
