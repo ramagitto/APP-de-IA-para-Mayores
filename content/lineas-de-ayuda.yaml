@@ -1,0 +1,36 @@
+# Líneas de ayuda públicas que aparecen en los mensajes de cuidado.
+# No son datos personales: son servicios públicos.
+#
+# Antes del piloto hay que reverificar cada número en su fuente y actualizar la fecha
+# (ver docs/checklist-piloto.md). `npm run lessons:check` avisa si pasaron más de 90 días.
+lineas:
+  - id: cas_amba
+    nombre: Centro de Asistencia al Suicida
+    numero: '135'
+    alcance: Gratuita desde CABA y Gran Buenos Aires
+    fuente: https://www.asistenciaalsuicida.org.ar/
+    verificado: 2026-11-10
+  - id: cas_nacional
+    nombre: Centro de Asistencia al Suicida
+    numero: (011) 5275-1135
+    alcance: Desde todo el país
+    fuente: https://www.asistenciaalsuicida.org.ar/
+    verificado: 2026-11-10
+  - id: salud_mental_nacional
+    nombre: Línea Nacional de Orientación y Apoyo en la Urgencia de Salud Mental (Ministerio de Salud)
+    numero: 0800-999-0091
+    alcance: Gratuita, desde todo el país, las 24 horas
+    fuente: https://www.argentina.gob.ar/node/513585
+    verificado: 2026-11-10
+  - id: emergencias
+    nombre: Emergencias
+    numero: '911'
+    alcance: Todo el país
+    fuente: https://www.argentina.gob.ar/node/9642
+    verificado: 2026-11-10
+  - id: emergencias_medicas
+    nombre: Emergencias médicas
+    numero: '107'
+    alcance: SAME en CABA y servicio local en varias provincias
+    fuente: https://www.argentina.gob.ar/node/9642
+    verificado: 2026-11-10

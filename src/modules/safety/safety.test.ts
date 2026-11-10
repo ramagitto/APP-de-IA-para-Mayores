@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { redactSensitiveData } from './redact.js';
 import { asksForSensitiveData, assessRisk, criticalCategory, type RiskCategory } from './risk.js';
-import { CARE_MESSAGES } from './safety-messages.js';
+import { loadHelplines, parseHelplines, staleHelplines } from './helplines.js';
+import { buildCareMessages } from './safety-messages.js';
+
+const CARE_MESSAGES = buildCareMessages(loadHelplines());
 
 function detects(text: string, category: RiskCategory) {
   return assessRisk(text).has(category);
@@ -112,12 +115,68 @@ describe('mensajes de cuidado', () => {
     }
   });
 
-  it('la emergencia médica indica llamar al 911', () => {
-    expect(CARE_MESSAGES.medical_emergency).toMatch(/911/);
+  it('la emergencia médica indica llamar al 911 o al 107', () => {
+    expect(CARE_MESSAGES.medical_emergency).toMatch(/911 o al 107/);
   });
 
   it('la angustia sugiere hablar con la familia o un profesional', () => {
     expect(CARE_MESSAGES.distress).toMatch(/familia/);
     expect(CARE_MESSAGES.distress).toMatch(/profesional/);
+  });
+
+  it('la angustia nombra las líneas de ayuda y deriva al 0800 si no atienden', () => {
+    const message = CARE_MESSAGES.distress ?? '';
+
+    for (const number of ['135', '(011) 5275-1135', '0800-999-0091', '911', '107']) {
+      expect(message).toContain(number);
+    }
+    expect(message).toMatch(/Si no te atienden, llamá al 0800-999-0091/);
+  });
+
+  it('no menciona horarios', () => {
+    for (const message of Object.values(CARE_MESSAGES)) {
+      expect(message).not.toMatch(/\b(24 horas|horario|de \d+ a \d+|\d{1,2}(:\d{2})? ?h)\b/i);
+    }
+  });
+
+  it('los números salen del archivo de configuración', () => {
+    const lines = loadHelplines();
+    const custom = buildCareMessages({
+      ...lines,
+      cas_amba: { ...lines.cas_amba, numero: '999' },
+    });
+
+    expect(custom.distress).toContain('al 999 (gratis');
+  });
+});
+
+describe('líneas de ayuda', () => {
+  const yaml = (lines: string) => `lineas:\n${lines}`;
+  const line = (id: string) =>
+    `  - id: ${id}\n    nombre: X\n    numero: '1'\n    alcance: X\n    fuente: https://ejemplo.com\n    verificado: 2026-11-10\n`;
+  const all = [
+    'cas_amba',
+    'cas_nacional',
+    'salud_mental_nacional',
+    'emergencias',
+    'emergencias_medicas',
+  ];
+
+  it('el archivo real es válido y cada línea tiene fuente y fecha', () => {
+    for (const helpline of Object.values(loadHelplines())) {
+      expect(helpline.fuente).toMatch(/^https:\/\//);
+      expect(helpline.verificado).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it('exige todas las líneas que usan los mensajes', () => {
+    expect(() => parseHelplines(yaml(all.slice(1).map(line).join('')))).toThrow('cas_amba');
+  });
+
+  it('avisa las líneas verificadas hace más de 90 días', () => {
+    const lines = parseHelplines(yaml(all.map(line).join('')));
+
+    expect(staleHelplines(lines, new Date('2027-01-15'))).toHaveLength(0);
+    expect(staleHelplines(lines, new Date('2027-03-01'))).toHaveLength(5);
   });
 });

@@ -1,8 +1,18 @@
 # Decisiones tomadas sin el OK del equipo
 
-Durante la sesión autónoma del 10/11/2026, Claude tomó estas decisiones sin consultar, eligiendo en cada caso la opción más razonable y simple. **Cada una se puede revertir.** Revisalas y marcá cuáles aprobás.
+Durante la sesión autónoma del 10/11/2026, Claude tomó estas decisiones sin consultar, eligiendo en cada caso la opción más razonable y simple. **Cada una se puede revertir.**
 
 Las importantes también tienen ADR.
+
+## Estado al 10/11/2026
+
+- **Aprobadas por el equipo:** la 2 (mensajes de cuidado fuera del tope) y la 4, resuelta (se suman las líneas de ayuda, ver abajo).
+- **En borrador hasta su revisión:** la 5. Los mensajes de cuidado los revisan el equipo y una persona con formación en psicología antes del piloto. En el código están marcados con `CARE_MESSAGES_REVIEW = 'borrador'`, y `npm run lessons:check` lo avisa.
+- **Aprobadas provisoriamente, a revisar más adelante:** todas las demás.
+
+**Resolución de la 4:** la regla "nada de teléfonos reales" era para datos personales, no para líneas públicas. Los mensajes suman el 135 y el (011) 5275-1135 del Centro de Asistencia al Suicida, el 0800-999-0091 del Ministerio de Salud (si no atienden en el 135) y el 911 o el 107 para emergencias, sin horarios. Los números viven en [`content/lineas-de-ayuda.yaml`](../content/lineas-de-ayuda.yaml), con fuente y fecha de verificación, y reverificarlos es parte de la [checklist del piloto](checklist-piloto.md).
+
+## Decisiones
 
 | #   | Decisión                                                                                                                      | Por qué                                                                                                                                                                                                       | Cómo se revierte                                                        | Importancia                                                 |
 | --- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------- |
