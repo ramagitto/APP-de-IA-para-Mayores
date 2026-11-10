@@ -31,6 +31,16 @@ export function encryptContact(contact: ContactId, keys: PhoneKeys): string {
   return encryptPhone(contact, keys);
 }
 
+// Cifrado de cualquier texto con la misma clave, para lo que hay que guardar un rato
+// (por ejemplo, un mensaje entrante hasta procesarlo).
+export function encryptText(text: string, keys: PhoneKeys): string {
+  return encryptPhone(text, keys);
+}
+
+export function decryptText(stored: string, keys: PhoneKeys): string {
+  return decryptPhone(stored, keys);
+}
+
 export function decryptContact(stored: string, keys: PhoneKeys): ContactId {
   const contact = decryptPhone(stored, keys);
   parseContact(contact);

@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   check,
   date,
   index,
@@ -157,15 +158,20 @@ export const supportRequests = pgTable(
 export const inboundStatus = pgEnum('inbound_status', ['received', 'processed', 'ignored']);
 
 // Mensajes que llegan por el webhook. El id del proveedor es único: si Meta reintenta, no se
-// procesa dos veces. El contenido va cifrado y se borra apenas se procesa.
+// procesa dos veces. El contenido va cifrado y se borra apenas se procesa; el contacto, cuando
+// se terminaron de enviar las respuestas.
 export const inboundEvents = pgTable('inbound_events', {
   id: uuid().primaryKey().defaultRandom(),
   providerMessageId: text('provider_message_id').notNull().unique(),
   contactHash: text('contact_hash').notNull(),
+  contactEncrypted: text('contact_encrypted'),
   payloadEncrypted: text('payload_encrypted'),
   status: inboundStatus().notNull().default('received'),
+  // La persona pidió la BAJA: al terminar de enviar, se borran también estos registros.
+  forgetContact: boolean('forget_contact').notNull().default(false),
   receivedAt: timestamp('received_at', { withTimezone: true }).notNull(),
   processedAt: timestamp('processed_at', { withTimezone: true }),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
 });
 
 export const outboundStatus = pgEnum('outbound_status', ['pending', 'sent']);
