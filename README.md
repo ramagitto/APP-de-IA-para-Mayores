@@ -108,7 +108,7 @@ docs/               Arquitectura, costos y decisiones (ADR)
 
 ## Documentación
 
-- [Cómo seguir desde otra PC](docs/continuar-en-otra-pc.md)
+- [Cómo retomar en otro chat o PC](docs/como-retomar.md)
 - [Plan de fases](docs/plan-de-fases.md)
 - [Arquitectura y modelo de datos](docs/arquitectura.md)
 - [WhatsApp: reglas, tarifas y costos](docs/whatsapp-y-costos.md)

@@ -76,4 +76,4 @@ Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios
 - **Antes del piloto:** [docs/checklist-piloto.md](docs/checklist-piloto.md).
 
 - **Plan de las fases que faltan, con sus criterios:** [docs/plan-de-fases.md](docs/plan-de-fases.md).
-- **Dónde quedamos y qué falta decidir:** [docs/continuar-en-otra-pc.md](docs/continuar-en-otra-pc.md).
+- **Cómo retomar en otro chat o PC, y qué falta decidir:** [docs/como-retomar.md](docs/como-retomar.md).
