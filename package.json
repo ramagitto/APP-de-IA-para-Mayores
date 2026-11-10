@@ -23,7 +23,9 @@
     "db:seed": "tsx scripts/seed.ts",
     "lessons:check": "tsx scripts/check-lessons.ts",
     "lesson:play": "tsx scripts/play-lesson.ts",
-    "evals": "tsx scripts/run-evals.ts"
+    "evals": "tsx scripts/run-evals.ts",
+    "whatsapp:simulate": "tsx scripts/whatsapp-simulate.ts",
+    "support": "tsx scripts/support.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.7.0",

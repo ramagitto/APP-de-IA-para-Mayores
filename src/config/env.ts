@@ -35,11 +35,39 @@ const voiceShape = {
   AUDIO_CACHE_DIR: z.string().min(1).default('var/audio'),
 };
 
+// WhatsApp: disabled (sin webhook), fake (webhook real, envíos falsos, solo local) o cloud.
+const whatsappShape = {
+  WHATSAPP_PROVIDER: z.enum(['disabled', 'fake', 'cloud']).default('disabled'),
+  // Secreto de la app de Meta: firma los webhooks.
+  WHATSAPP_APP_SECRET: z.string().min(1).optional(),
+  // Texto que inventamos y cargamos en Meta para verificar el webhook.
+  WHATSAPP_VERIFY_TOKEN: z.string().min(1).optional(),
+  WHATSAPP_ACCESS_TOKEN: z.string().min(1).optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().regex(/^\d+$/, 'Solo dígitos').optional(),
+  // La versión que usan los ejemplos de la documentación de Meta al 10/11/2026.
+  WHATSAPP_GRAPH_VERSION: z
+    .string()
+    .regex(/^v\d+\.\d+$/, 'Por ejemplo v27.0')
+    .default('v27.0'),
+  WHATSAPP_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(20),
+};
+
 // Cada proveedor real necesita sus claves. Sin ellas, mejor fallar al arrancar que a mitad de una lección.
 const REQUIRED_KEYS: [string, string, string[]][] = [
   ['LLM_PROVIDER', 'anthropic', ['ANTHROPIC_API_KEY']],
   ['STT_PROVIDER', 'openai', ['OPENAI_API_KEY']],
   ['TTS_PROVIDER', 'azure', ['AZURE_SPEECH_KEY', 'AZURE_SPEECH_REGION']],
+  ['WHATSAPP_PROVIDER', 'fake', ['WHATSAPP_APP_SECRET', 'WHATSAPP_VERIFY_TOKEN']],
+  [
+    'WHATSAPP_PROVIDER',
+    'cloud',
+    [
+      'WHATSAPP_APP_SECRET',
+      'WHATSAPP_VERIFY_TOKEN',
+      'WHATSAPP_ACCESS_TOKEN',
+      'WHATSAPP_PHONE_NUMBER_ID',
+    ],
+  ],
 ];
 
 function requireProviderKey(env: Record<string, unknown>, context: z.RefinementCtx): void {
@@ -70,11 +98,20 @@ const envSchema = z
     PHONE_HASH_KEY: secretKey.optional(),
     ...tutorShape,
     ...voiceShape,
+    ...whatsappShape,
   })
   .superRefine((env, context) => {
     requireProviderKey(env, context);
 
     if (env.APP_ENV === 'local') return;
+
+    if (env.WHATSAPP_PROVIDER === 'fake') {
+      context.addIssue({
+        code: 'custom',
+        path: ['WHATSAPP_PROVIDER'],
+        message: 'El adaptador falso es solo para local',
+      });
+    }
 
     for (const key of ['PHONE_ENCRYPTION_KEY', 'PHONE_HASH_KEY'] as const) {
       if (!env[key]) {
