@@ -4,6 +4,31 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ## [Sin publicar]
 
+### Fase 4: WhatsApp, alta, BAJA y AYUDA
+
+Hecha en una sesión autónoma. Las decisiones tomadas sin el equipo están en `docs/decisiones-pendientes.md` (números 34 a 52).
+
+#### Agregado
+
+- Alta con consentimiento primero: nadie se crea sin un ACEPTO explícito. Antes, solo se guarda el hash del contacto, y se borra si no acepta.
+- BAJA, que borra todos los datos de la persona, y AYUDA, que abre un pedido para una persona del equipo. Los mensajes de cuidado también abren uno.
+- `npm run support` para listar, responder y cerrar pedidos desde el número de Charlá.
+- Webhook de WhatsApp con verificación, firma HMAC-SHA256, idempotencia por id de mensaje y cola con pg-boss.
+- Adaptador de la Cloud API: texto, notas de voz (descarga y envío), plantillas y respuesta por id de WhatsApp o teléfono. Sin probar con un número real.
+- Respuestas guardadas antes de enviarse, para reintentar sin duplicar, y contenido cifrado que se borra al procesar o enviar.
+- Límite de mensajes por persona por minuto.
+- Plantillas versionadas en `content/plantillas-whatsapp.yaml`, validadas con las reglas de Meta, y su documento para enviarlas a aprobación.
+- Pasos exactos para conectar el número, en la checklist del piloto.
+- `npm run whatsapp:simulate` para probar el webhook local con mensajes firmados.
+- Tablas `pending_signups`, `support_requests`, `inbound_events` y `outbound_messages`.
+- ADR 0010.
+
+#### Cambiado
+
+- Las personas se identifican por contacto: el id por empresa de WhatsApp o el teléfono.
+- El simulador pasa por el mismo alta con consentimiento.
+- Los logs ya no guardan la query de las URL.
+
 ### Fase 3: simulador y voz
 
 Hecha en una sesión autónoma. Las decisiones tomadas sin el equipo están en `docs/decisiones-pendientes.md`.

@@ -45,7 +45,8 @@ Charlá enseña a personas de 65 años o más a usar la IA para resolver cosas d
 | 1. Dominio y contenido | En revisión: [PR #2](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/2). Faltan el OK y la revisión de lecciones |
 | 2. Tutor de IA         | En revisión: hecha en sesión autónoma, sale de la rama de la Fase 1. Ver `docs/resumen-sesion.md`                         |
 | 3. Simulador y voz     | En revisión: hecha en sesión autónoma, sale de la rama de la Fase 2. Ver `docs/resumen-sesion.md`                         |
-| 4 a 8                  | Pendientes                                                                                                                |
+| 4. WhatsApp            | En revisión: hecha en sesión autónoma, sin número real. Ver `docs/resumen-sesion.md`                                      |
+| 5 a 8                  | Pendientes                                                                                                                |
 
 ## Fase 2: tutor de IA (25 h)
 
@@ -86,7 +87,18 @@ Necesita que el [trámite de Meta](tramite-meta.md) esté avanzado, y saber qui�
 
 **Aceptación:** con un número de prueba, una persona hace el alta, completa una lección y pide la baja.
 
+**Estado (10/11/2026, sesión autónoma):**
+
+- Hecho y probado con webhooks firmados que imitan la documentación de Meta, más el adaptador falso: alta con consentimiento primero, lección, AYUDA y BAJA con borrado.
+- **La prueba con un número real queda para cuando el equipo lo conecte,** con los pasos de la [checklist del piloto](checklist-piloto.md).
+- Quedan abiertos tres puntos: la constancia de consentimiento y baja (revisión legal), la transcripción de WhatsApp de las notas de voz (no verificada) y si los avisos `info` se mandan siempre.
+
 ## Fase 5: programación y notificaciones (14 h)
+
+**Viene de la Fase 4:**
+
+- programar la limpieza de las altas sin respuesta (`deleteExpiredPendingSignups`, 7 días) y de los registros viejos de `inbound_events` y `outbound_messages`;
+- los recordatorios usan `sendTemplate` con las plantillas de `content/plantillas-whatsapp.yaml`.
 
 - A la hora que elige cada persona, si no escribió, sale **un solo recordatorio por día**, solo los días de lección, con reintentos y sin duplicados.
 - Si la ventana sigue abierta, va como mensaje común. Si no, como plantilla.
