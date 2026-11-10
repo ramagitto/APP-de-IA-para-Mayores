@@ -1,6 +1,6 @@
 # ADR 0004: hosting en Railway
 
-**Estado:** aceptado como punto de partida, 30/10/2026. Precios a confirmar en el despliegue de la Fase 8.
+**Estado:** aceptado como punto de partida, 30/10/2026. Precios a confirmar en el despliegue de la Fase 8. El [ADR 0006](0006-recortes-del-mvp.md) saca el entorno de staging.
 
 ## Contexto
 

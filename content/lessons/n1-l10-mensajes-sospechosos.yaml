@@ -1,0 +1,25 @@
+id: n1-l10-mensajes-sospechosos
+version: 1
+nivel: 1
+orden: 10
+tipo: antiestafa
+revision: borrador
+titulo: Mensajes sospechosos
+logro: Sabés reconocer un mensaje de estafa y qué hacer.
+intro:
+  guion: >-
+    Hoy cerramos el nivel cuidándonos. Muchas estafas se parecen: te apuran, te asustan o te piden
+    plata o un código. Por ejemplo: "Hola, soy tu nieto, cambié de número. Necesito plata urgente".
+    Lo que hay que hacer es frenar. No respondas. Llamá a tu familiar al número de siempre. Y el
+    código que te llega por mensaje no se le pasa a nadie. Practiquemos: ¿qué harías con ese mensaje?
+practica:
+  foco: Que no mande plata ni códigos y que verifique llamando al número de siempre. Si duda, que le pida ayuda a la familia.
+  ejemplo_mejorado: No le contesto ni le mando plata. Llamo a mi nieto al número que ya tengo para preguntarle.
+desafio:
+  consigna: >-
+    Copiale a la IA este ejemplo inventado: "Soy tu nieto, cambié de número, necesito plata urgente".
+    Preguntale: "¿Esto puede ser una estafa? ¿Qué tendría que hacer?". Después contame si pudiste.
+  recordatorio_seguridad: Si algún día consultás por un mensaje real, sacale antes nombres, números y datos personales.
+cierre:
+  si_pudo: ¡Felicitaciones, terminaste el nivel 1! Ante la duda, frená y llamá al número de siempre.
+  si_no_pudo: No pasa nada, terminaste el nivel 1 igual. Ante la duda, frená y llamá al número de siempre.

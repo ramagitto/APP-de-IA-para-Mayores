@@ -1,0 +1,25 @@
+id: n1-l04-que-no-es-una-ia
+version: 1
+nivel: 1
+orden: 4
+tipo: regular
+revision: borrador
+titulo: Qué no es una IA
+logro: Sabés que la IA no es una persona y no conoce tu vida.
+intro:
+  guion: >-
+    Una IA conversa muy bien, y por eso a veces parece una persona. Pero no lo es. No tiene
+    sentimientos y no te conoce: no sabe quién sos ni qué te pasa, salvo lo que le cuentes. Por eso
+    le va mejor si le das un poco de contexto, sin datos privados. Practiquemos: pedí una
+    recomendación para un regalo, contando para quién es y qué le gusta.
+practica:
+  foco: Que dé contexto útil, como para quién es o qué le gusta, sin nombres completos ni datos privados.
+  ejemplo_mejorado: Quiero hacerle un regalo a mi nieta de 10 años, que ama dibujar. ¿Qué me recomendás por poca plata?
+desafio:
+  consigna: >-
+    Hacele ese pedido a la IA y mirá cómo te responde. Después preguntale: "¿Sos una persona?". Fijate
+    qué te dice, y contame si pudiste.
+  recordatorio_seguridad: Podés contar para quién es el regalo sin dar nombres completos, direcciones ni teléfonos.
+cierre:
+  si_pudo: ¡Muy bien! Ya sabés que es un programa, y que cuanto mejor le explicás, mejor te ayuda.
+  si_no_pudo: No pasa nada, lo importante ya lo aprendiste. La IA es un programa, no una persona.

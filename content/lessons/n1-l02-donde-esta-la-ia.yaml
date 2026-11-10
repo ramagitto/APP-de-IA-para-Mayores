@@ -1,0 +1,25 @@
+id: n1-l02-donde-esta-la-ia
+version: 1
+nivel: 1
+orden: 2
+tipo: regular
+revision: borrador
+titulo: Dónde está la IA
+logro: Encontraste una IA en tu celular.
+intro:
+  guion: >-
+    Hoy vamos a buscar la IA en tu celular. En muchos teléfonos ya está dentro de WhatsApp: se llama
+    Meta AI y suele aparecer como un círculo azul. También hay otras, como ChatGPT y Gemini, pero
+    para empezar no hace falta instalar nada. Si no te aparece, no rompiste nada: a veces depende
+    del teléfono. Practiquemos: ¿qué le dirías para saludarla y preguntarle qué puede hacer?
+practica:
+  foco: Que salude y pregunte con naturalidad, como en una charla. Que pierda el miedo a escribirle.
+  ejemplo_mejorado: Hola, es la primera vez que uso esto. ¿Me contás en qué me podés ayudar?
+desafio:
+  consigna: >-
+    Buscá el círculo azul en WhatsApp y mandale ese saludo. Si no lo encontrás, podés pedirle a
+    alguien de confianza que te ayude a buscarlo. Después contame si pudiste.
+  recordatorio_seguridad: Para saludar no hace falta dar tu nombre completo ni ningún otro dato personal.
+cierre:
+  si_pudo: ¡Muy bien! Ya sabés dónde está y ya la saludaste. Eso era lo más difícil.
+  si_no_pudo: Tranqui, a mucha gente le pasa. Podemos seguir practicando acá conmigo.

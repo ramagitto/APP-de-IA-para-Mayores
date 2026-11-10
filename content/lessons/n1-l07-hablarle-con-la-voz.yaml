@@ -1,0 +1,25 @@
+id: n1-l07-hablarle-con-la-voz
+version: 1
+nivel: 1
+orden: 7
+tipo: regular
+revision: borrador
+titulo: Hablarle con la voz
+logro: Le hiciste un pedido a la IA sin tener que tipear todo.
+intro:
+  guion: >-
+    Si te cuesta tipear, hoy te va a gustar. En el teclado del celular suele haber un dibujito de un
+    micrófono. Lo tocás, hablás, y el teléfono escribe lo que decís. Después revisás y mandás. Cuando
+    hablamos, conviene decir las cosas ordenadas y sin apuro. Practiquemos: mandame un audio pidiendo
+    una receta fácil, y contame qué ingredientes tenés.
+practica:
+  foco: Que el pedido dicho en voz alta se entienda y esté ordenado, con los ingredientes y qué quiere lograr.
+  ejemplo_mejorado: Tengo pollo, arroz y una cebolla. Pasame una receta fácil, paso a paso, para dos personas.
+desafio:
+  consigna: >-
+    Abrí la IA y tocá el micrófono del teclado. Dictale el pedido, revisá que se haya escrito bien y
+    mandalo. Si no encontrás el micrófono, escribilo como siempre. Después contame si pudiste.
+  recordatorio_seguridad: Revisá lo que se escribió antes de mandarlo, y no dictes claves ni datos privados.
+cierre:
+  si_pudo: ¡Genial! Ahora también le podés hablar. Es mucho más cómodo, ¿no?
+  si_no_pudo: No te hagas problema. El micrófono cambia según el teléfono, y escribir funciona igual.

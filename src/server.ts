@@ -1,6 +1,6 @@
 import { buildApp } from './app.js';
 import { loadEnv } from './config/env.js';
-import { createDatabase, pingDatabase } from './shared/database.js';
+import { createDatabase, pingDatabase } from './shared/db/database.js';
 
 const env = loadEnv();
 const database = createDatabase(env.DATABASE_URL);

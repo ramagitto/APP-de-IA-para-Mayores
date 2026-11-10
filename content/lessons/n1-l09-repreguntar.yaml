@@ -1,0 +1,25 @@
+id: n1-l09-repreguntar
+version: 1
+nivel: 1
+orden: 9
+tipo: regular
+revision: borrador
+titulo: Repreguntar sin vergüenza
+logro: Aprendiste a seguir la conversación hasta entender.
+intro:
+  guion: >-
+    Con la IA se conversa: no hace falta acertar a la primera. Si algo no te queda claro, repreguntás.
+    Le podés decir: "no entendí esa parte", "decilo más corto" o "dame otro ejemplo". Se acuerda de lo
+    que venían hablando en esa charla, así que no tenés que repetir todo. Practiquemos: imaginá que
+    te explicó algo y no entendiste. ¿Cómo se lo dirías?
+practica:
+  foco: Que diga con claridad qué no entendió y qué necesita, como algo más corto o un ejemplo, sin pedir disculpas.
+  ejemplo_mejorado: No entendí la segunda parte. ¿Me la explicás más corto y con un ejemplo?
+desafio:
+  consigna: >-
+    Pedile a la IA que te explique algo que te interese. Después repreguntale al menos una vez, con
+    alguna de esas frases, y contame si pudiste.
+  recordatorio_seguridad: Podés repreguntar todo lo que quieras, siempre sin compartir datos privados.
+cierre:
+  si_pudo: ¡Excelente! Ya sabés conversar con la IA hasta entender. Eso es lo más valioso.
+  si_no_pudo: No pasa nada. Cuando quieras, le decís "no entendí" y sigue la charla.

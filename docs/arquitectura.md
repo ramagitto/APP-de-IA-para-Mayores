@@ -2,7 +2,7 @@
 
 Charlá es un **monolito modular**: un solo programa, dividido en módulos con responsabilidades claras. Es más simple de desplegar y de entender que varios servicios, y alcanza de sobra para 30 a 100 usuarios.
 
-Este documento describe el diseño objetivo. Por ahora solo existen el servidor, `/health` y la conexión a Postgres. Cada fase agrega su parte.
+Este documento describe el diseño objetivo, con los recortes del [ADR 0006](adr/0006-recortes-del-mvp.md). Hoy existen el servidor, la base de datos, el motor de lecciones ([ADR 0007](adr/0007-motor-de-lecciones.md)), las rachas y un tutor simulado. Cada fase agrega su parte.
 
 ## Diagrama
 
@@ -20,9 +20,8 @@ flowchart LR
   CORE --> DB[(Postgres)]
   YAML[Lecciones en YAML] --> CORE
   SCHED[Jobs programados] --> CORE
-  P[Padrino: panel web] --> API[API web]
-  ADM[Panel interno] --> API
-  API --> DB
+  CORE --> MAIL[Email al padrino]
+  DB --> KPI[Scripts de KPIs y CSV]
 ```
 
 ## Ideas principales
@@ -42,23 +41,22 @@ Más detalle en el [ADR 0005](adr/0005-whatsapp-inicio-por-usuario-y-curso-cerra
 
 ## Modelo de datos inicial
 
-| Tabla                | Para qué sirve                                                        |
-| -------------------- | --------------------------------------------------------------------- |
-| `users`              | Teléfono cifrado y un hash para buscarlo, hora elegida, estado        |
-| `consents`           | Qué aceptó cada persona, en qué versión y cuándo                      |
-| `lesson_attempts`    | Intento de lección: estado, versión del contenido, quién lo inició    |
-| `streaks`            | Racha actual y mejor racha, contada sobre lecciones programadas       |
-| `inbound_events`     | Eventos recibidos, con ID único de Meta para no procesarlos dos veces |
-| `outbound_messages`  | Mensajes enviados, con clave de idempotencia, categoría y costo       |
-| `conversation_turns` | Transcripciones, con fecha de vencimiento a los 30 días               |
-| `sponsors`           | Padrinos                                                              |
-| `sponsor_links`      | Vínculo padrino-mayor, con el consentimiento del mayor                |
-| `magic_links`        | Enlaces de acceso de un solo uso para el panel                        |
-| `usage_costs`        | Costo por usuario, por día y por proveedor                            |
-| `product_events`     | Alta, lección iniciada o completada, abandono, baja                   |
-| `survey_responses`   | Encuesta de satisfacción al final de cada nivel                       |
+| Tabla                | Para qué sirve                                                        | Desde  |
+| -------------------- | --------------------------------------------------------------------- | ------ |
+| `users`              | Teléfono cifrado y un hash para buscarlo, hora elegida, estado        | Fase 1 |
+| `consents`           | Qué aceptó cada persona, en qué versión y cuándo                      | Fase 1 |
+| `lesson_attempts`    | Intento de lección: estado, versión del contenido, quién lo inició    | Fase 1 |
+| `streaks`            | Racha actual y mejor racha, contada sobre lecciones programadas       | Fase 1 |
+| `conversation_turns` | Transcripciones, con fecha de vencimiento a los 30 días               | Fase 2 |
+| `usage_costs`        | Costo por usuario, por día y por proveedor                            | Fase 2 |
+| `inbound_events`     | Eventos recibidos, con ID único de Meta para no procesarlos dos veces | Fase 4 |
+| `outbound_messages`  | Mensajes enviados, con clave de idempotencia, categoría y costo       | Fase 4 |
+| `sponsors`           | Padrinos                                                              | Fase 6 |
+| `sponsor_links`      | Vínculo padrino-mayor, con el consentimiento del mayor                | Fase 6 |
+| `product_events`     | Alta, lección iniciada o completada, abandono, baja                   | Fase 7 |
+| `survey_responses`   | Encuesta de satisfacción al final de cada nivel                       | Fase 7 |
 
-Las lecciones no van en la base: `lesson_attempts` guarda el identificador y la versión del archivo YAML. El diseño se revisa en la Fase 1, y puede cambiar al implementarlo.
+Las lecciones no van en la base: `lesson_attempts` guarda el identificador y la versión del archivo YAML. Las tablas de fases futuras son un plan y pueden cambiar al implementarlas.
 
 ## Privacidad
 
