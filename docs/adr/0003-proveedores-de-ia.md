@@ -1,6 +1,6 @@
 # ADR 0003: proveedores de IA intercambiables
 
-**Estado:** aceptado como punto de partida, 30/10/2026. El modelo de lenguaje se confirma con las evals de la Fase 2.
+**Estado:** aceptado como punto de partida, 30/10/2026. El modelo de lenguaje se confirma con las evals de la Fase 2. El [ADR 0009](0009-voz-y-simulador.md) cambia el modelo de voz a texto a `gpt-transcribe`, porque `gpt-4o-mini-transcribe` se da de baja el 26/2/2027.
 
 ## Contexto
 

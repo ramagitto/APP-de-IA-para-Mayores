@@ -2,7 +2,7 @@
 
 Charlá enseña a personas de 65 años o más a usar la inteligencia artificial para resolver cosas del día a día, con lecciones cortas por WhatsApp. No hace falta instalar ninguna app. Es un MVP para un piloto de 30 personas, desarrollado en la materia Dirección de Proyectos Informáticos (Ingeniería en Informática, USAL).
 
-**Estado:** Fase 2, en revisión. Ya se puede recorrer una lección por consola, con el tutor de IA y sus controles de seguridad. Por defecto usa un proveedor de IA simulado, que no gasta plata. Todavía no hay integración con WhatsApp.
+**Estado:** Fase 3, en revisión. Ya se puede hacer una lección completa desde un simulador web, escribiendo o hablando, con el tutor de IA y sus controles de seguridad. Por defecto usa proveedores de IA y de voz simulados, que no gastan plata. Todavía no hay integración con WhatsApp.
 
 ## Levantar el proyecto
 
@@ -21,7 +21,13 @@ npm run dev
 
 Si responde `503`, el servidor anda pero no llega a la base: revisá que Docker esté abierto.
 
-## Probar una lección
+## Probar en el simulador
+
+Con `npm run dev` corriendo, abrí <http://localhost:3000/simulador> en **Chrome**. Escribí cualquier cosa para arrancar la lección, o tocá **🎤 Hablar**. Para probar la lección siguiente, tocá **Pasar al día siguiente**.
+
+Con los proveedores de voz simulados, el navegador reconoce y lee la voz. Algunos navegadores mandan el audio a sus servidores para eso, así que úsenlo solo para desarrollo y demos. El simulador solo existe con `APP_ENV=local`.
+
+## Probar una lección por consola
 
 Esto no necesita Docker ni base de datos:
 
@@ -41,6 +47,8 @@ ANTHROPIC_API_KEY=tu-clave
 ```
 
 Con eso, `npm run lesson:play` y `npm run evals` usan el modelo real. **Cada llamada cuesta plata**, aunque poco: el tope es de USD 0,01 por persona y por día.
+
+Para la voz real, usá `STT_PROVIDER=openai` con `OPENAI_API_KEY`, y `TTS_PROVIDER=azure` con `AZURE_SPEECH_KEY` y `AZURE_SPEECH_REGION`. Están documentadas en `.env.example`.
 
 ## Comandos
 
