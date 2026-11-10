@@ -73,6 +73,24 @@ describe('parseEnv', () => {
     expect(() => parseTutorEnv({ LLM_PROVIDER: 'anthropic' })).toThrow('ANTHROPIC_API_KEY');
   });
 
+  it('usa proveedores de voz simulados por defecto', () => {
+    expect(parseEnv({ DATABASE_URL: databaseUrl })).toMatchObject({
+      STT_PROVIDER: 'mock',
+      STT_MODEL: 'gpt-transcribe',
+      TTS_PROVIDER: 'mock',
+      TTS_VOICE: 'es-AR-ElenaNeural',
+    });
+  });
+
+  it('exige las claves de cada proveedor de voz real', () => {
+    expect(() => parseEnv({ DATABASE_URL: databaseUrl, STT_PROVIDER: 'openai' })).toThrow(
+      'OPENAI_API_KEY',
+    );
+    expect(() => parseEnv({ DATABASE_URL: databaseUrl, TTS_PROVIDER: 'azure' })).toThrow(
+      'AZURE_SPEECH_KEY, AZURE_SPEECH_REGION',
+    );
+  });
+
   it('rechaza una clave de largo incorrecto', () => {
     expect(() => parseEnv({ DATABASE_URL: databaseUrl, PHONE_HASH_KEY: 'corta' })).toThrow(
       'PHONE_HASH_KEY',

@@ -44,6 +44,20 @@ La hizo Claude en una sesión autónoma, así que estas horas **no son tuyas**. 
 | **Total**                                              | **25 h** |
 | Tu revisión del PR y prueba con clave real (estimado)  | 3 a 5 h  |
 
+## Detalle estimado de la Fase 3
+
+También la hizo Claude en una sesión autónoma: anotá solo tu tiempo de revisión y de prueba.
+
+| Tarea                                                 | Estimado |
+| ----------------------------------------------------- | -------- |
+| Interfaces de voz, proveedores simulados y reales     | 5 h      |
+| Caché de audios y control de costos de voz            | 2 h      |
+| Servicio de conversación independiente del canal      | 5 h      |
+| Simulador web                                         | 5 h      |
+| Documentación, ADR y PR                               | 2 h      |
+| **Total**                                             | **19 h** |
+| Tu revisión, prueba en Chrome y con claves (estimado) | 3 a 5 h  |
+
 ## Cuándo reaccionar
 
 Si al cerrar una fase el total acumulado supera lo estimado **con margen**, el plan ya no entra. En ese caso, antes de empezar la fase siguiente, se decide entre recortar más o usar parte de abril.

@@ -8,6 +8,8 @@ Todo lo que tiene que estar resuelto antes de que la primera persona reciba una 
 - [ ] **Revisar los mensajes de cuidado** (`src/modules/safety/safety-messages.ts`) con el equipo y con una persona con formación en psicología. Después, cambiar `CARE_MESSAGES_REVIEW` a `'revisado'`.
 - [ ] **Definir quién atiende `AYUDA`** y en qué tiempo responde.
 - [ ] **Correr las evals con el proveedor real** (`LLM_PROVIDER=anthropic`): las categorías críticas tienen que dar 100%.
+- [ ] **Probar la voz real** con audios de personas mayores: que `gpt-transcribe` entienda el habla rioplatense y que la voz de Azure suene bien. Medir la duración real de los guiones.
+- [ ] **No usar los proveedores de voz simulados en el piloto:** usan la voz del navegador, que puede mandar el audio a terceros.
 
 ## Contenido
 

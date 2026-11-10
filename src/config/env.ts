@@ -19,16 +19,42 @@ const tutorShape = {
   TUTOR_DAILY_BUDGET_USD: z.coerce.number().positive().default(0.01),
 };
 
-function requireProviderKey(
-  env: { LLM_PROVIDER: string; ANTHROPIC_API_KEY?: string },
-  context: z.RefinementCtx,
-): void {
-  if (env.LLM_PROVIDER === 'anthropic' && !env.ANTHROPIC_API_KEY) {
-    context.addIssue({
-      code: 'custom',
-      path: ['ANTHROPIC_API_KEY'],
-      message: 'Obligatoria con LLM_PROVIDER=anthropic',
-    });
+// Variables de voz. Sin claves, se usan proveedores simulados.
+const voiceShape = {
+  STT_PROVIDER: z.enum(['mock', 'openai']).default('mock'),
+  OPENAI_API_KEY: z.string().min(1).optional(),
+  // gpt-4o-mini-transcribe se da de baja el 26/2/2027: OpenAI recomienda gpt-transcribe.
+  STT_MODEL: z.string().min(1).default('gpt-transcribe'),
+  TTS_PROVIDER: z.enum(['mock', 'azure']).default('mock'),
+  AZURE_SPEECH_KEY: z.string().min(1).optional(),
+  AZURE_SPEECH_REGION: z
+    .string()
+    .regex(/^[a-z0-9]+$/, 'Una región de Azure, por ejemplo eastus')
+    .optional(),
+  TTS_VOICE: z.string().min(1).default('es-AR-ElenaNeural'),
+  AUDIO_CACHE_DIR: z.string().min(1).default('var/audio'),
+};
+
+// Cada proveedor real necesita sus claves. Sin ellas, mejor fallar al arrancar que a mitad de una lección.
+const REQUIRED_KEYS: [string, string, string[]][] = [
+  ['LLM_PROVIDER', 'anthropic', ['ANTHROPIC_API_KEY']],
+  ['STT_PROVIDER', 'openai', ['OPENAI_API_KEY']],
+  ['TTS_PROVIDER', 'azure', ['AZURE_SPEECH_KEY', 'AZURE_SPEECH_REGION']],
+];
+
+function requireProviderKey(env: Record<string, unknown>, context: z.RefinementCtx): void {
+  for (const [variable, provider, keys] of REQUIRED_KEYS) {
+    if (env[variable] !== provider) continue;
+
+    for (const key of keys) {
+      if (!env[key]) {
+        context.addIssue({
+          code: 'custom',
+          path: [key],
+          message: `Obligatoria con ${variable}=${provider}`,
+        });
+      }
+    }
   }
 }
 
@@ -43,6 +69,7 @@ const envSchema = z
     PHONE_ENCRYPTION_KEY: secretKey.optional(),
     PHONE_HASH_KEY: secretKey.optional(),
     ...tutorShape,
+    ...voiceShape,
   })
   .superRefine((env, context) => {
     requireProviderKey(env, context);

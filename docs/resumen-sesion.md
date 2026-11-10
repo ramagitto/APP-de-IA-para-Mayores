@@ -1,84 +1,90 @@
-# Resumen de la sesión autónoma del 10/11/2026
+# Resumen de la sesión autónoma del 10/11/2026 (segunda parte)
+
+La primera parte de la sesión (Fase 2) quedó en el historial de git de este archivo.
 
 ## En una línea
 
-**La Fase 2 está hecha y en revisión, con la CI en verde.** La Fase 1 ya estaba completa en lo técnico. No mergeé nada, no gasté plata, no creé cuentas y no toqué secretos ni permisos.
+**Las líneas de ayuda están sumadas y la Fase 3 está hecha y en revisión, con la CI en verde.** El rebase del #3 sobre `main` sigue pendiente, porque el #2 todavía no está mergeado. No mergeé nada, no gasté plata, no creé cuentas y no toqué secretos ni permisos.
 
 ## Pull requests
 
-| PR                                                               | Fase                   | Base                  | CI       | Estado                |
-| ---------------------------------------------------------------- | ---------------------- | --------------------- | -------- | --------------------- |
-| [#2](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/2) | 1. Dominio y contenido | `main`                | En verde | Abierto, espera tu OK |
-| [#3](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/3) | 2. Tutor de IA         | `feat/fase-1-dominio` | En verde | Abierto, espera tu OK |
+| PR                                                               | Fase                             | Base                  | CI       | Estado                                |
+| ---------------------------------------------------------------- | -------------------------------- | --------------------- | -------- | ------------------------------------- |
+| [#2](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/2) | 1. Dominio y contenido           | `main`                | En verde | Abierto, para que lo mergees vos      |
+| [#3](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/3) | 2. Tutor de IA y líneas de ayuda | `feat/fase-1-dominio` | En verde | Abierto. Falta el rebase sobre `main` |
+| [#4](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/4) | 3. Simulador y voz               | `feat/fase-2-tutor`   | En verde | Abierto, espera tu OK                 |
 
-**Orden para mergear:** primero el #2 y después el #3. Si al mergear el #2 se borra su rama, GitHub cambia solo la base del #3 a `main`.
+**Orden para mergear:** #2, después #3 y después #4.
 
-## Qué quedó hecho
+## Lo que pediste sobre las líneas de ayuda
 
-**Fase 1:** no hubo cambios en esta sesión. Ya cumplía el plan aprobado: dominio, formato YAML, motor, rachas, 10 lecciones y recorrido por consola. Para cerrarla falta la revisión de contenidos.
+Hecho, en el PR #3:
 
-**Fase 2:**
+- Los mensajes de cuidado suman el **135** (gratis, CABA y GBA) y el **(011) 5275-1135** (todo el país), del Centro de Asistencia al Suicida.
+- Si no atienden en el 135, derivan al **0800-999-0091**, la línea de salud mental del Ministerio de Salud.
+- Para emergencias, **911 o 107**. Ojo: el 107 depende de cada jurisdicción (es el SAME en CABA y el servicio local en varias provincias).
+- **Sin horarios** en los mensajes.
+- Los números viven en [`content/lineas-de-ayuda.yaml`](../content/lineas-de-ayuda.yaml), con la fuente y la fecha de verificación de cada uno. `npm run lessons:check` avisa si pasaron más de 90 días.
+- Nueva [checklist del piloto](checklist-piloto.md), que incluye "reverificar las líneas de ayuda".
+- Los mensajes de cuidado quedaron marcados como **borrador** en el código (`CARE_MESSAGES_REVIEW`) y en [decisiones-pendientes.md](decisiones-pendientes.md). `npm run lessons:check` también lo avisa.
 
-- **Capas de seguridad por reglas,** que no dependen del modelo:
-  - mensajes de cuidado ante angustia, emergencia médica o estafa en curso;
-  - freno a los intentos de manipular al tutor;
-  - ocultado de DNI, tarjetas, claves y correos antes de mandar el texto al proveedor;
-  - controles sobre la respuesta: que no pida datos, no dé dosis, no tenga links ni filtre sus instrucciones;
-  - notas obligatorias de derivación al médico, al abogado o a canales oficiales.
-- **Tutor con IA:** interfaz de proveedor, proveedor simulado (por defecto) y adaptador de Anthropic (Claude Haiku 5.5), con respaldo por reglas si el proveedor falla, rechaza el pedido o se pasa el tope.
-- **Costos:** tope de USD 0,01 por persona y por día, y la tabla `usage_costs` con cada llamada.
-- **Evals:** 43 casos en 11 categorías, con umbral del 100% en las 8 críticas y del 90% en el resto. Corren en la CI con el proveedor simulado.
-- **Consola:** `npm run lesson:play` usa el tutor completo.
-- **Documentación:** [ADR 0008](adr/0008-tutor-guardrails-y-evals.md), [decisiones pendientes](decisiones-pendientes.md), `CHANGELOG`, horas, plan de fases, `README` y `CLAUDE.md`.
+## Qué quedó hecho en la Fase 3
+
+- **Voz:** interfaces de voz a texto y texto a voz. Por defecto son simuladas; los adaptadores reales son OpenAI (`gpt-transcribe`) y Azure (`es-AR-ElenaNeural`, en nota de voz OGG/Opus). Hay caché de audios y el costo de voz se registra por persona y por día.
+- **Servicio de conversación independiente del canal:** transcribe, cuida a la persona, sigue o arranca la lección (una por día de lección), guarda el estado y agrega audio a las respuestas. WhatsApp lo va a reutilizar en la Fase 4.
+- **Simulador web** en `/simulador`, solo con `APP_ENV=local`: se puede escribir o hablar, pasar al día siguiente y empezar de nuevo.
+- **Seguridad:** un manejador de errores general, que nunca muestra detalles internos.
+- **Documentación:** [ADR 0009](adr/0009-voz-y-simulador.md), decisiones 19 a 33, `CHANGELOG`, horas, plan de fases, `README` y `CLAUDE.md`.
 
 ## Verificación
 
-| Control                         | Resultado                     |
-| ------------------------------- | ----------------------------- |
-| Tests unitarios                 | 321 de 321                    |
-| Tests de integración (Postgres) | 16 de 16                      |
-| Evals con el proveedor simulado | 43 de 43, aprobadas           |
-| Lecciones                       | 10 válidas, todas en borrador |
-| CI del PR #3                    | En verde                      |
+| Control                                           | Resultado                                                                                |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Tests unitarios                                   | 358 de 358                                                                               |
+| Tests de integración (Postgres)                   | 24 de 24                                                                                 |
+| Evals con el proveedor simulado                   | Aprobadas                                                                                |
+| Lección completa por HTTP contra el servidor real | Funcionó: arranque, audio, cierre, racha, una por día, día siguiente, cuidado y reinicio |
+| Micrófono y voz en un navegador real              | **Sin verificar:** desde acá no puedo usar un navegador                                  |
+| CI de los PR #3 y #4                              | En verde                                                                                 |
 
-Durante el trabajo aparecieron dos fallas, ya corregidas y con tests:
+## Hallazgo importante
 
-- "Me duele el pecho" recibía solo "consultá a tu médico". Ahora es una emergencia con mensaje para llamar al 911.
-- "Mi clave del banco es..." no se ocultaba.
-
-## Costo del tutor
-
-| Medición                  | Resultado                                                |
-| ------------------------- | -------------------------------------------------------- |
-| Con el proveedor simulado | Unos ARS 0,07 por devolución y ARS 3 por persona por mes |
-| Meta                      | Menos de ARS 500 por persona por mes                     |
-
-**Ese número subestima el costo real:** el simulado no cuenta el razonamiento interno del modelo y estima los tokens por el largo del texto. Aunque el real fuera 50 veces mayor, seguiría muy por debajo de la meta. La medición real necesita una clave de Anthropic.
+**OpenAI da de baja `gpt-4o-mini-transcribe` el 26/2/2027**, antes del piloto. Es el modelo de voz a texto que elegimos en el ADR 0003. Cambié a `gpt-transcribe`, que es el reemplazo que recomienda OpenAI: el proveedor es el mismo, así que el stack no cambia. Cuesta unos USD 0,0045 por minuto, un 50% más, pero el monto sigue siendo muy chico.
 
 ## Decisiones tomadas sin vos
 
-Están las 18 en [decisiones-pendientes.md](decisiones-pendientes.md), con por qué y cómo revertirlas. Las que más importan:
+Están las 15 nuevas (de la 19 a la 33) en [decisiones-pendientes.md](decisiones-pendientes.md). Las que más importan:
 
-1. **Los mensajes de cuidado no cuentan para el tope de 5 mensajes de la lección.** Nunca se deja de cuidar a alguien para ahorrar.
-2. **La emergencia médica es una categoría crítica,** con el 911.
-3. **Los mensajes de cuidado solo mencionan el 911.** No incluí la línea 135 del Centro de Asistencia al Suicida, porque tu regla prohíbe teléfonos reales en el repo. **Decidilo vos.**
-4. **Umbrales de las evals:** 100% en las categorías críticas y 90% en el resto.
+- **26. El servicio de conversación crea a la persona con su primer mensaje, sin consentimiento.** Alcanza para el simulador, pero en la Fase 4 el alta con opt-in tiene que ir primero.
+- **22. Con los proveedores simulados, el simulador usa la voz del navegador**, que en Chrome manda el audio a Google. Solo sirve para demos locales, y la página lo avisa.
+- **23. Cuándo va audio:** la intro siempre; el resto, solo si la persona habló; el cuidado, siempre en texto.
+- **20. La cola con pg-boss pasó a la Fase 4.**
 
 ## Qué quedó bloqueado
 
-| Qué                                                      | Por qué                                            | Qué hace falta                                                                                                    |
-| -------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Probar el tutor con un modelo real y medir el costo real | No hay clave, y estaba prohibido pedirla o crearla | Crear una cuenta de Anthropic, cargar la clave en el `.env` y correr `npm run evals` con `LLM_PROVIDER=anthropic` |
-| Comparar proveedores (ADR 0003)                          | Requiere cuentas en OpenAI y Google                | Lo mismo, con un adaptador por proveedor                                                                          |
-| Cerrar la Fase 1                                         | Falta la revisión humana de las lecciones          | Que contenidos revise `content/lessons/`                                                                          |
-| Mergear los PR                                           | Requiere tu OK                                     | Revisar y mergear #2 y después #3                                                                                 |
+| Qué                                 | Por qué                              | Qué hace falta                                                                           |
+| ----------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Rebase del #3 sobre `main`          | El #2 no está mergeado               | Mergear el #2. Después, el rebase son estos tres comandos, y lo hago yo cuando me avises |
+| Probar la voz real                  | No hay claves de OpenAI ni de Azure  | Crear las cuentas y cargar las claves en el `.env`                                       |
+| Probar el tutor con un modelo real  | No hay clave de Anthropic            | Lo mismo                                                                                 |
+| Probar el micrófono en un navegador | No puedo usar un navegador desde acá | Abrir el simulador en Chrome                                                             |
+
+Los comandos del rebase, para cuando el #2 esté mergeado:
+
+```bash
+git fetch origin
+git switch feat/fase-2-tutor
+git rebase --onto origin/main origin/feat/fase-1-dominio
+git push --force-with-lease
+```
+
+Después, si GitHub no lo hace solo, hay que cambiar la base del PR #3 a `main`.
 
 ## Qué necesito que revises
 
-1. **Los mensajes de cuidado,** en `src/modules/safety/safety-messages.ts`. Son los textos más sensibles del producto. Si es posible, que los mire alguien de salud mental.
-2. **La línea 135:** ¿la incluimos?
-3. **Las decisiones de [decisiones-pendientes.md](decisiones-pendientes.md),** en especial las marcadas como importancia alta.
-4. **Los PR #2 y #3,** para mergearlos.
-5. **Tus horas reales,** en [horas.md](horas.md).
+1. **Mergear el #2,** para hacer el rebase del #3.
+2. **Probar el simulador en Chrome:** `npm run dev` y abrir <http://localhost:3000/simulador>. Hacé una lección hablando y escuchando.
+3. **Las decisiones 19 a 33** de [decisiones-pendientes.md](decisiones-pendientes.md), en especial la 22, la 23 y la 26.
+4. **Los PR #3 y #4.**
 
-Después de esto, la Fase 3 (simulador y voz) espera tu OK para empezar.
+Después de esto, la Fase 4 (WhatsApp) espera tu OK. Necesita el trámite de Meta avanzado y saber quién es el titular y quién atiende `AYUDA`.

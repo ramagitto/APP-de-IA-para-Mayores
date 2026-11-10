@@ -1,5 +1,5 @@
 import { type Helplines, loadHelplines } from './helplines.js';
-import type { RiskCategory } from './risk.js';
+import { assessRisk, criticalCategory, type RiskCategory } from './risk.js';
 
 // BORRADOR. Antes del piloto los revisan el equipo y una persona con formación en psicología.
 // No se publican en el piloto sin esa revisión (ver docs/checklist-piloto.md).
@@ -36,6 +36,13 @@ let cachedCareMessages: Partial<Record<RiskCategory, string>> | undefined;
 export function careMessage(category: RiskCategory): string | undefined {
   cachedCareMessages ??= buildCareMessages(loadHelplines());
   return cachedCareMessages[category];
+}
+
+// Si el texto muestra angustia, una emergencia médica o una estafa en curso, devuelve el mensaje
+// de cuidado. Se usa en cualquier momento, haya o no una lección abierta.
+export function careResponseFor(text: string): string | undefined {
+  const critical = criticalCategory(assessRisk(text));
+  return critical && careMessage(critical);
 }
 
 // Frases que se agregan a la devolución del tutor. Garantizan la derivación aunque la IA la olvide.

@@ -10,3 +10,6 @@ coverage/
 
 # Resultados de las evals: se regeneran con npm run evals.
 evals/resultados/
+
+# Audios generados por Charlá (caché). Se regeneran solos.
+var/

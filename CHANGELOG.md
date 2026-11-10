@@ -4,6 +4,24 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ## [Sin publicar]
 
+### Fase 3: simulador y voz
+
+Hecha en una sesión autónoma. Las decisiones tomadas sin el equipo están en `docs/decisiones-pendientes.md`.
+
+#### Agregado
+
+- Interfaces de voz a texto y texto a voz, con proveedores simulados (por defecto) y adaptadores de OpenAI (`gpt-transcribe`) y Azure (`es-AR-ElenaNeural`, nota de voz OGG/Opus), sin probar contra las APIs reales.
+- Caché de los audios que genera Charlá, y costo de voz registrado por persona y por día.
+- Servicio de conversación independiente del canal: transcribe, cuida, sigue o arranca la lección, guarda el estado y agrega audio a las respuestas.
+- Simulador web en `/simulador`, solo con `APP_ENV=local`: texto o voz, pasar al día siguiente y empezar de nuevo.
+- Manejador de errores general que no muestra detalles internos.
+- ADR 0009.
+
+#### Cambiado
+
+- Voz a texto con `gpt-transcribe`, porque `gpt-4o-mini-transcribe` se da de baja el 26/2/2027.
+- La cola con pg-boss pasa a la Fase 4.
+
 ### Fase 2: tutor de IA
 
 Hecha en una sesión autónoma. Las decisiones tomadas sin el equipo están en `docs/decisiones-pendientes.md`.

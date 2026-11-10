@@ -20,6 +20,7 @@ Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios
 - `npm run lesson:play -- n1-l01`: recorre una lección por consola, sin base de datos.
 - `npm run db:generate -- --name <nombre>` y `npm run db:migrate`: crean y aplican migraciones.
 - `npm run evals`: evals del tutor con el proveedor de `LLM_PROVIDER` (simulado por defecto, gratis).
+- Con `npm run dev`, el simulador está en `http://localhost:3000/simulador` (solo con `APP_ENV=local`).
 
 ## Convenciones de código
 
@@ -54,6 +55,10 @@ Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios
 - **Alcance del MVP:** padrino por email, sin panel; métricas por script; simulador en una página simple; sin staging ([ADR 0006](docs/adr/0006-recortes-del-mvp.md)).
 - **Motor y rachas:** máquina de estados pura y racha sin castigo ([ADR 0007](docs/adr/0007-motor-de-lecciones.md)).
 - **Tutor:** proveedor simulado por defecto; Claude Haiku 5.5 con `LLM_PROVIDER=anthropic`. Tope de USD 0,01 por persona y por día ([ADR 0008](docs/adr/0008-tutor-guardrails-y-evals.md)).
+- **Voz:** proveedores simulados por defecto; `gpt-transcribe` y Azure `es-AR-ElenaNeural` con claves. La intro va siempre en audio; el resto, solo si la persona habló; el cuidado, siempre en texto ([ADR 0009](docs/adr/0009-voz-y-simulador.md)).
+- **Canales:** todo mensaje entra por `ConversationService` (`src/modules/conversation/`). El simulador ya lo usa, y WhatsApp lo va a usar en la Fase 4.
+- **El simulador no tiene login:** solo se registra con `APP_ENV=local`.
+- **El audio de la persona nunca se guarda,** y la transcripción tampoco. Solo se guardan los audios que genera Charlá.
 - **Dependencias por fase:** pg-boss entra cuando se use por primera vez. React queda afuera del MVP.
 - **Metas del piloto:** retención a 14 días como métrica principal, repaso del día 30 como dato complementario. Menos de ARS 500 por usuario por mes para IA. La mensajería se mide aparte y va al VAN.
 
@@ -61,6 +66,8 @@ Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios
 
 - **Fase 1:** dominio y contenido, en revisión (PR #2). Las 10 lecciones están en borrador, a la espera del rol de contenidos.
 - **Fase 2:** tutor de IA, hecha en una sesión autónoma, en revisión. Sale de la rama de la Fase 1. Decisiones a revisar en [docs/decisiones-pendientes.md](docs/decisiones-pendientes.md); resumen en [docs/resumen-sesion.md](docs/resumen-sesion.md).
+- **Fase 3:** simulador y voz, hecha en una sesión autónoma, en revisión. Sale de la rama de la Fase 2.
+- **Antes del piloto:** [docs/checklist-piloto.md](docs/checklist-piloto.md).
 
 - **Plan de las fases que faltan, con sus criterios:** [docs/plan-de-fases.md](docs/plan-de-fases.md).
 - **Dónde quedamos y qué falta decidir:** [docs/continuar-en-otra-pc.md](docs/continuar-en-otra-pc.md).

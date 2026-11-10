@@ -44,7 +44,8 @@ Charlá enseña a personas de 65 años o más a usar la IA para resolver cosas d
 | 0. Esqueleto           | Terminada                                                                                                                 |
 | 1. Dominio y contenido | En revisión: [PR #2](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/2). Faltan el OK y la revisión de lecciones |
 | 2. Tutor de IA         | En revisión: hecha en sesión autónoma, sale de la rama de la Fase 1. Ver `docs/resumen-sesion.md`                         |
-| 3 a 8                  | Pendientes                                                                                                                |
+| 3. Simulador y voz     | En revisión: hecha en sesión autónoma, sale de la rama de la Fase 2. Ver `docs/resumen-sesion.md`                         |
+| 4 a 8                  | Pendientes                                                                                                                |
 
 ## Fase 2: tutor de IA (25 h)
 
@@ -61,14 +62,17 @@ Charlá enseña a personas de 65 años o más a usar la IA para resolver cosas d
 ## Fase 3: simulador y voz (19 h)
 
 - Simulador en una página simple, sin React, que imite una conversación de WhatsApp.
-- STT para los audios del usuario. Primero, `gpt-4o-mini-transcribe`, a probar con audios reales de personas mayores.
+- STT para los audios del usuario con `gpt-transcribe`, porque `gpt-4o-mini-transcribe` se da de baja el 26/2/2027 ([ADR 0009](adr/0009-voz-y-simulador.md)). A probar con audios reales de personas mayores.
 - TTS con voz en español de Argentina, como `es-AR-ElenaNeural`. Los audios de cada lección se generan una vez y se reutilizan.
-- Cola con pg-boss, porque transcribir y generar voz tarda varios segundos.
 - Definir cuándo una respuesta va en audio y medir la duración real de los guiones.
+- Servicio de conversación independiente del canal, que reutiliza la Fase 4.
+- La cola con pg-boss pasó a la Fase 4: el simulador puede esperar la respuesta.
 
 **Aceptación:** se puede hacer una lección completa desde el simulador, hablando y escuchando.
 
 ## Fase 4: WhatsApp (35 h)
+
+**Viene de la Fase 3:** cola con pg-boss para el webhook; alta con opt-in y consentimiento **antes** de que el servicio de conversación cree a la persona; transacción e idempotencia al guardar el intento y la racha; y decidir si los avisos `info` se mandan siempre, porque cada uno se paga.
 
 Necesita que el [trámite de Meta](tramite-meta.md) esté avanzado, y saber quién es el titular y quién atiende `AYUDA`.
 

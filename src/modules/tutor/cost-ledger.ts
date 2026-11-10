@@ -6,7 +6,8 @@ export interface CostEntry {
   day: LocalDay;
   provider: string;
   model: string;
-  purpose: 'tutor_review';
+  /** tutor_review: devolución del tutor; stt: voz a texto; tts: texto a voz. */
+  purpose: 'tutor_review' | 'stt' | 'tts';
   usage: TokenUsage;
   costUsd: number;
 }

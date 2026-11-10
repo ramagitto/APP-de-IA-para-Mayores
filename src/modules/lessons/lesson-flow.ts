@@ -1,5 +1,5 @@
-import { assessRisk, criticalCategory, normalizeText } from '../safety/risk.js';
-import { careMessage as careMessageFor } from '../safety/safety-messages.js';
+import { normalizeText } from '../safety/risk.js';
+import { careResponseFor } from '../safety/safety-messages.js';
 import type { LessonCalendar } from '../streaks/lesson-calendar.js';
 import { registerCompletion, type Streak, streakNote } from '../streaks/streak.js';
 import {
@@ -35,8 +35,7 @@ export async function handleUserMessage(input: {
 
   // Si la persona está angustiada o la acaban de estafar, primero se la cuida: la lección espera
   // en el mismo paso, y este mensaje no consume el tope de la lección.
-  const critical = criticalCategory(assessRisk(text));
-  const careMessage = critical && careMessageFor(critical);
+  const careMessage = careResponseFor(text);
 
   if (
     careMessage &&
