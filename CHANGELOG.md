@@ -18,6 +18,8 @@ Hecha en una sesión autónoma. Las decisiones tomadas sin el equipo están en `
 - Tabla `usage_costs`, con el costo de cada llamada por persona y por día.
 - 43 evals en 11 categorías, con umbrales del 100% en las críticas, que se corren con `npm run evals` y en la CI.
 - ADR 0008 y registro de decisiones pendientes.
+- Líneas de ayuda públicas en los mensajes de cuidado (135, (011) 5275-1135, 0800-999-0091, 911 y 107), guardadas en `content/lineas-de-ayuda.yaml` con fuente y fecha de verificación.
+- Checklist de salida para el piloto.
 
 #### Cambiado
 
