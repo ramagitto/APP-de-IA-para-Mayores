@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   check,
   date,
+  index,
   integer,
   pgEnum,
   pgTable,
@@ -100,3 +101,25 @@ export const streaks = pgTable('streaks', {
   lastCompletedDay: date('last_completed_day'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+// Costo de cada llamada a un proveedor de IA. Si la persona se da de baja, la fila queda sin
+// usuario (SET NULL): el costo sigue sirviendo para las métricas, pero ya no es un dato personal.
+export const usageCosts = pgTable(
+  'usage_costs',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+    day: date().notNull(),
+    provider: text().notNull(),
+    model: text().notNull(),
+    purpose: text().notNull(),
+    inputTokens: integer('input_tokens').notNull(),
+    outputTokens: integer('output_tokens').notNull(),
+    cacheReadTokens: integer('cache_read_tokens').notNull(),
+    cacheWriteTokens: integer('cache_write_tokens').notNull(),
+    // Millonésimos de dólar, redondeados hacia arriba: evita errores de redondeo con decimales.
+    costUsdMicros: integer('cost_usd_micros').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('usage_costs_user_day').on(table.userId, table.day)],
+);

@@ -22,9 +22,11 @@
     "db:migrate": "tsx src/shared/db/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "lessons:check": "tsx scripts/check-lessons.ts",
-    "lesson:play": "tsx scripts/play-lesson.ts"
+    "lesson:play": "tsx scripts/play-lesson.ts",
+    "evals": "tsx scripts/run-evals.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.7.0",
     "drizzle-orm": "^0.45.4",
     "fastify": "^5.12.7",
     "pg": "^8.23.1",

@@ -1,3 +1,5 @@
+import { assessRisk, criticalCategory, normalizeText } from '../safety/risk.js';
+import { careMessage as careMessageFor } from '../safety/safety-messages.js';
 import type { LessonCalendar } from '../streaks/lesson-calendar.js';
 import { registerCompletion, type Streak, streakNote } from '../streaks/streak.js';
 import {
@@ -27,8 +29,21 @@ export async function handleUserMessage(input: {
   tutor: Tutor;
   calendar: LessonCalendar;
   now: Date;
+  userId?: string;
 }): Promise<LessonTurnResult> {
-  const { attempt, lesson, text, streak, tutor, calendar, now } = input;
+  const { attempt, lesson, text, streak, tutor, calendar, now, userId } = input;
+
+  // Si la persona está angustiada o la acaban de estafar, primero se la cuida: la lección espera
+  // en el mismo paso, y este mensaje no consume el tope de la lección.
+  const critical = criticalCategory(assessRisk(text));
+  const careMessage = critical && careMessageFor(critical);
+
+  if (
+    careMessage &&
+    (attempt.state === 'awaiting_practice' || attempt.state === 'awaiting_challenge_report')
+  ) {
+    return { attempt, streak, messages: [{ kind: 'care', format: 'text', text: careMessage }] };
+  }
 
   switch (attempt.state) {
     case 'awaiting_practice': {
@@ -36,6 +51,7 @@ export async function handleUserMessage(input: {
         lesson,
         userText: text,
         retryAllowed: canRetryPractice(attempt),
+        userId,
       });
 
       return { ...applyPracticeReview(attempt, lesson, review), streak };
@@ -63,11 +79,5 @@ const COULD_NOT_DO_IT =
 
 // El paso con la IA real es autorreportado. Ante la duda se toma como hecho, para no desanimar.
 export function classifyChallengeReport(text: string): ChallengeOutcome {
-  const normalized = text
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '');
-
-  return COULD_NOT_DO_IT.test(normalized) ? 'not_done' : 'done';
+  return COULD_NOT_DO_IT.test(normalizeText(text)) ? 'not_done' : 'done';
 }

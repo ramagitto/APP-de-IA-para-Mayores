@@ -28,7 +28,8 @@ export interface LessonAttempt {
 }
 
 export interface OutgoingMessage {
-  kind: 'intro' | 'feedback' | 'challenge' | 'closing';
+  // 'care' es un mensaje de cuidado: no forma parte de la lección ni cuenta para su tope.
+  kind: 'intro' | 'feedback' | 'challenge' | 'closing' | 'care';
   format: 'audio' | 'text';
   text: string;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseEnv } from './env.js';
+import { parseEnv, parseTutorEnv } from './env.js';
 
 const databaseUrl = 'postgres://usuario:clave-secreta@localhost:5433/charla';
 const validKey = Buffer.alloc(32, 'x').toString('base64');
@@ -52,6 +52,25 @@ describe('parseEnv', () => {
     });
 
     expect(env.PHONE_ENCRYPTION_KEY).toBe(validKey);
+  });
+
+  it('usa el proveedor simulado por defecto', () => {
+    expect(parseEnv({ DATABASE_URL: databaseUrl })).toMatchObject({
+      LLM_PROVIDER: 'mock',
+      TUTOR_MODEL: 'claude-haiku-5-5',
+      TUTOR_DAILY_BUDGET_USD: 0.01,
+    });
+  });
+
+  it('exige la clave si se elige el proveedor real', () => {
+    expect(() => parseEnv({ DATABASE_URL: databaseUrl, LLM_PROVIDER: 'anthropic' })).toThrow(
+      'ANTHROPIC_API_KEY',
+    );
+  });
+
+  it('las variables del tutor se leen sin necesitar la base de datos', () => {
+    expect(parseTutorEnv({}).LLM_PROVIDER).toBe('mock');
+    expect(() => parseTutorEnv({ LLM_PROVIDER: 'anthropic' })).toThrow('ANTHROPIC_API_KEY');
   });
 
   it('rechaza una clave de largo incorrecto', () => {

@@ -43,7 +43,8 @@ Charlá enseña a personas de 65 años o más a usar la IA para resolver cosas d
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | 0. Esqueleto           | Terminada                                                                                                                 |
 | 1. Dominio y contenido | En revisión: [PR #2](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/2). Faltan el OK y la revisión de lecciones |
-| 2 a 8                  | Pendientes                                                                                                                |
+| 2. Tutor de IA         | En revisión: hecha en sesión autónoma, sale de la rama de la Fase 1. Ver `docs/resumen-sesion.md`                         |
+| 3 a 8                  | Pendientes                                                                                                                |
 
 ## Fase 2: tutor de IA (25 h)
 

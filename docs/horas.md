@@ -29,6 +29,21 @@ Punto de partida: unas 197 horas disponibles entre el 2/11/2026 y el 31/3/2027, 
 
 **Desvío** = (real − estimado) ÷ estimado. Por ejemplo, 30 h reales contra 24 h estimadas son +25%.
 
+## Detalle estimado de la Fase 2
+
+La hizo Claude en una sesión autónoma, así que estas horas **no son tuyas**. Lo que sí te toca es revisar el PR, probar con una clave real y revisar los mensajes de cuidado. Anotá ese tiempo en el registro semanal.
+
+| Tarea                                                  | Estimado |
+| ------------------------------------------------------ | -------- |
+| Capa de proveedor, proveedor simulado y adaptador real | 5 h      |
+| Prompt del tutor y armado del pedido                   | 4 h      |
+| Capas de seguridad y mensajes de cuidado               | 6 h      |
+| Control de costos y tabla `usage_costs`                | 3 h      |
+| 43 evals y su comando                                  | 5 h      |
+| Documentación, ADR y PR                                | 2 h      |
+| **Total**                                              | **25 h** |
+| Tu revisión del PR y prueba con clave real (estimado)  | 3 a 5 h  |
+
 ## Cuándo reaccionar
 
 Si al cerrar una fase el total acumulado supera lo estimado **con margen**, el plan ya no entra. En ese caso, antes de empezar la fase siguiente, se decide entre recortar más o usar parte de abril.
