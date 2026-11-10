@@ -5,6 +5,8 @@ export interface PracticeReviewRequest {
   lesson: Lesson;
   userText: string;
   retryAllowed: boolean;
+  /** Para el tope de costo diario por persona. Sin él, el gasto se cuenta como anónimo. */
+  userId?: string;
 }
 
 export interface PracticeReview {
@@ -12,14 +14,15 @@ export interface PracticeReview {
   feedback: string;
 }
 
-// La Fase 2 agrega una implementación con un modelo de lenguaje real detrás de esta interfaz.
+// La implementación con modelo de lenguaje está en src/modules/tutor/llm-tutor.ts.
 export interface Tutor {
   review(request: PracticeReviewRequest): Promise<PracticeReview>;
 }
 
 const MIN_WORDS_FOR_CLEAR_REQUEST = 6;
 
-// Tutor de mentira para desarrollar y testear sin gastar en IA: solo mira el largo del pedido.
+// Tutor por reglas: solo mira el largo del pedido. Sirve para tests y como respaldo cuando el
+// proveedor de IA falla, se pasa del tope de costo o devuelve una respuesta que no pasa los controles.
 export class SimulatedTutor implements Tutor {
   async review({ lesson, userText, retryAllowed }: PracticeReviewRequest): Promise<PracticeReview> {
     const example = `"${lesson.improvedExample}"`;

@@ -80,6 +80,53 @@ describe('handleUserMessage', () => {
   });
 });
 
+describe('mensajes de cuidado', () => {
+  const tutorThatMustNotRun = {
+    review: async () => {
+      throw new Error('El tutor no tendría que ejecutarse');
+    },
+  };
+
+  it('ante angustia responde con cuidado, sin llamar al tutor ni avanzar', async () => {
+    const { attempt } = startAttempt({ lesson, trigger: 'user_message', now });
+
+    const result = await handleUserMessage({
+      ...base,
+      tutor: tutorThatMustNotRun,
+      attempt,
+      text: 'Me quiero morir, ya no aguanto más',
+    });
+
+    expect(result.attempt).toEqual(attempt);
+    expect(result.messages).toHaveLength(1);
+    expect(result.messages[0]).toMatchObject({ kind: 'care' });
+    expect(result.messages[0]?.text).toMatch(/familia/);
+  });
+
+  it('ante una estafa en curso da pasos claros, también durante el desafío', async () => {
+    const { attempt: started } = startAttempt({ lesson, trigger: 'user_message', now });
+    const practice = await handleUserMessage({ ...base, attempt: started, text: clearRequest });
+
+    const result = await handleUserMessage({
+      ...base,
+      attempt: practice.attempt,
+      text: 'Ayer le pasé el código de WhatsApp a uno que dijo ser del banco',
+    });
+
+    expect(result.attempt).toEqual(practice.attempt);
+    expect(result.messages[0]?.kind).toBe('care');
+    expect(result.messages[0]?.text).toMatch(/banco/);
+  });
+
+  it('el mensaje de cuidado no consume el tope de la lección', async () => {
+    const { attempt } = startAttempt({ lesson, trigger: 'reminder', now });
+
+    const result = await handleUserMessage({ ...base, attempt, text: 'Me vaciaron la cuenta' });
+
+    expect(result.attempt.paidMessagesUsed).toBe(attempt.paidMessagesUsed);
+  });
+});
+
 describe('classifyChallengeReport', () => {
   it.each([
     'Sí',
