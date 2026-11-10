@@ -40,6 +40,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run lessons:check
       - run: npm test
+      # Con el proveedor simulado: no gasta plata ni necesita una clave.
+      - run: npm run evals
       - run: npm run test:integration
       - run: npm run build
 

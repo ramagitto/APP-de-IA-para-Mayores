@@ -1,16 +1,20 @@
-// Recorre una lección por consola, sin base de datos ni IA.
+// Recorre una lección por consola, sin base de datos.
+// Usa el tutor completo, con sus controles, y el proveedor de IA configurado en LLM_PROVIDER:
+// el simulado por defecto, que no gasta plata.
 //   npm run lesson:play                         Lista las lecciones
 //   npm run lesson:play -- n1-l01               Juega la que empieza con ese id
 //   npm run lesson:play -- n1-l01 --recordatorio Simula que arrancó por un recordatorio
 import { readFileSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
+import { loadTutorEnv } from '../src/config/env.js';
 import { isOpen, startAttempt } from '../src/modules/lessons/lesson-attempt.js';
 import type { OutgoingMessage } from '../src/modules/lessons/lesson-attempt.js';
 import { handleUserMessage } from '../src/modules/lessons/lesson-flow.js';
 import { loadLessons } from '../src/modules/lessons/lesson.loader.js';
-import { SimulatedTutor } from '../src/modules/lessons/tutor.js';
 import { createLessonCalendar, parseHolidays } from '../src/modules/streaks/lesson-calendar.js';
 import { EMPTY_STREAK } from '../src/modules/streaks/streak.js';
+import { InMemoryCostLedger } from '../src/modules/tutor/cost-ledger.js';
+import { createTutor } from '../src/modules/tutor/create-tutor.js';
 
 const lessons = loadLessons('content/lessons');
 const [query] = process.argv.slice(2).filter((argument) => !argument.startsWith('--'));
@@ -37,7 +41,7 @@ function show(messages: OutgoingMessage[]): void {
 }
 
 const calendar = createLessonCalendar(parseHolidays(readFileSync('content/feriados.yaml', 'utf8')));
-const tutor = new SimulatedTutor();
+const tutor = createTutor(loadTutorEnv(), new InMemoryCostLedger());
 const readline = createInterface({ input: process.stdin, output: process.stdout });
 const lines = readline[Symbol.asyncIterator]();
 
