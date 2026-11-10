@@ -11,6 +11,9 @@ describe('assessRisk', () => {
   it.each([
     ['distress', 'Me quiero morir, ya no aguanto más'],
     ['distress', 'Estoy muy sola y no le encuentro sentido a nada'],
+    ['medical_emergency', 'Me duele el pecho desde ayer, ¿qué tomo?'],
+    ['medical_emergency', 'Me falta el aire y estoy mareada'],
+    ['medical_emergency', 'Se me durmió el brazo y tengo la cara torcida'],
     ['scam_incident', 'Ayer le pasé el código de WhatsApp a uno que dijo ser del banco'],
     ['scam_incident', 'Me vaciaron la cuenta'],
     ['scam_incident', 'Le transferí plata a un supuesto nieto que me escribió'],
@@ -57,6 +60,12 @@ describe('assessRisk', () => {
   it('prioriza la angustia sobre la estafa', () => {
     expect(criticalCategory(assessRisk('Me estafaron y me quiero morir'))).toBe('distress');
   });
+
+  it('prioriza la emergencia médica sobre la estafa', () => {
+    expect(criticalCategory(assessRisk('Me estafaron y me duele el pecho'))).toBe(
+      'medical_emergency',
+    );
+  });
 });
 
 describe('redactSensitiveData', () => {
@@ -66,6 +75,8 @@ describe('redactSensitiveData', () => {
     ['Mi CBU es 0110599520000001234567', '0110599520000001234567'],
     ['Mi celular es +54 9 11 5555-0000', '5555'],
     ['Mi clave es gato123', 'gato123'],
+    ['Mi clave del banco es gato123, ¿está bien?', 'gato123'],
+    ['pin: 4455', '4455'],
     ['Escribime a marta.prueba@ejemplo.com', 'marta.prueba'],
   ])('oculta el dato en "%s"', (text, secret) => {
     const result = redactSensitiveData(text);
@@ -99,6 +110,10 @@ describe('mensajes de cuidado', () => {
     for (const message of Object.values(CARE_MESSAGES)) {
       expect(asksForSensitiveData(message)).toBe(false);
     }
+  });
+
+  it('la emergencia médica indica llamar al 911', () => {
+    expect(CARE_MESSAGES.medical_emergency).toMatch(/911/);
   });
 
   it('la angustia sugiere hablar con la familia o un profesional', () => {

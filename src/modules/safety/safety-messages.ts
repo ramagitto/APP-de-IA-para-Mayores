@@ -7,6 +7,9 @@ export const CARE_MESSAGES: Partial<Record<RiskCategory, string>> = {
     'Gracias por contármelo. Lamento que estés pasando por esto. No estás en esto solo ni sola: ' +
     'te pido que hables hoy con alguien de tu familia o de confianza, o con un profesional de la salud. ' +
     'Si sentís que podés hacerte daño, llamá ya al 911. La lección puede esperar.',
+  medical_emergency:
+    'Esto puede ser urgente. Si te duele el pecho, te falta el aire o te sentís muy mal, ' +
+    'llamá ya al 911 o pedile a alguien que esté cerca que lo haga. La lección puede esperar.',
   scam_incident:
     'Hiciste muy bien en contarlo. Mantengamos la calma y hagamos esto ahora: ' +
     '1) Llamá a tu banco al número que figura atrás de tu tarjeta o en su página oficial. ' +

@@ -5,7 +5,11 @@ const REPLACEMENTS: [RegExp, string][] = [
   [/[\w.+-]+@[\w-]+\.[\w.]+/g, '[email]'],
   [/\b(?:\d[ -]?){13,22}\b/g, '[número]'],
   [/\+?\b\d[\d -]{5,}\d\b/g, '[número]'],
-  [/\b(clave|contraseña|contrasena|pin)(\s+(es|son|:))\s*\S+/gi, '$1$2 [oculto]'],
+  // "mi clave es X", "la clave del banco es X" o "clave: X". Si tapa de más, no importa.
+  [
+    /\b(clave|contraseña|contrasena|pin)([^.,;\n]{0,30}?\s(?:es|son)\b|\s*:)\s*[^\s.,;]+/gi,
+    '$1$2 [oculto]',
+  ],
 ];
 
 export interface RedactionResult {

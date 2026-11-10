@@ -3,6 +3,7 @@
 
 export type RiskCategory =
   | 'distress'
+  | 'medical_emergency'
   | 'scam_incident'
   | 'scam_risky_intent'
   | 'sensitive_data'
@@ -14,6 +15,7 @@ export type RiskCategory =
 // Estas categorías cortan la lección: se responde con un mensaje de cuidado escrito por el equipo.
 export const CRITICAL_CATEGORIES: ReadonlySet<RiskCategory> = new Set([
   'distress',
+  'medical_emergency',
   'scam_incident',
 ]);
 
@@ -31,6 +33,10 @@ const RULES: Record<RiskCategory, RegExp[]> = {
     /\b(me quiero morir|quiero morirme|no quiero (vivir|seguir viviendo)|me quiero matar|quitarme la vida)\b/,
     /\b(no (le )?encuentro sentido|no tiene sentido (vivir|nada)|nadie me quiere|estoy (muy|tan) (sola|solo|triste|deprimida|deprimido))\b/,
     /\b(estoy desesperad[oa]|no doy mas|no aguanto mas)\b/,
+  ],
+  medical_emergency: [
+    /\b(me duele (mucho )?el pecho|dolor (fuerte )?(de|en el) pecho|me falta el aire|no puedo respirar|me cuesta respirar)\b/,
+    /\b(me desmaye|me estoy desmayando|perdi el conocimiento|se me (duerme|durmio|paralizo) (el brazo|la cara|medio cuerpo)|tengo la cara torcida)\b/,
   ],
   scam_incident: [
     /\b(le|les) (pase|di|mande|envie|dicte) (el|un|mi|los|mis) (codigo|clave|pin|token|numero de (la )?tarjeta|cbu)/,
@@ -87,8 +93,10 @@ export function assessRisk(text: string): Set<RiskCategory> {
 }
 
 export function criticalCategory(risks: Set<RiskCategory>): RiskCategory | undefined {
-  // La angustia va primero: si alguien está mal y además lo estafaron, primero lo cuidamos.
+  // Primero la persona y su salud; después la plata. Si alguien está mal y además lo estafaron,
+  // primero lo cuidamos.
   if (risks.has('distress')) return 'distress';
+  if (risks.has('medical_emergency')) return 'medical_emergency';
   if (risks.has('scam_incident')) return 'scam_incident';
   return undefined;
 }
