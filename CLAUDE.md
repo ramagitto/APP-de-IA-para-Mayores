@@ -19,6 +19,7 @@ Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios
 - `npm run lessons:check`: valida lecciones y feriados.
 - `npm run lesson:play -- n1-l01`: recorre una lección por consola, sin base de datos.
 - `npm run db:generate -- --name <nombre>` y `npm run db:migrate`: crean y aplican migraciones.
+- `npm run evals`: evals del tutor con el proveedor de `LLM_PROVIDER` (simulado por defecto, gratis).
 
 ## Convenciones de código
 
@@ -40,6 +41,8 @@ Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios
 - **Charlá nunca pide datos personales, claves ni códigos.**
 - **El tutor es un curso cerrado, no un asistente general.** Solo trabaja sobre la lección. Esto es clave para cumplir los términos de Meta ([ADR 0005](docs/adr/0005-whatsapp-inicio-por-usuario-y-curso-cerrado.md)).
 - **El tutor no da consejos médicos, legales ni financieros concretos:** deriva al profesional.
+- **La seguridad no depende solo del modelo.** Los mensajes de cuidado, el ocultado de datos, los controles de salida y las notas de derivación son reglas nuestras, en `src/modules/safety/` y `src/modules/tutor/` ([ADR 0008](docs/adr/0008-tutor-guardrails-y-evals.md)). Todo cambio en el tutor tiene que mantener las evals críticas al 100%.
+- **Nunca se escribe el texto del usuario en los logs** ni se manda al proveedor sin pasar por `redactSensitiveData`.
 - **Máximo 5 mensajes pagos por lección**, contando audios y el recordatorio.
 - **Retención de datos:** audios borrados al transcribirlos; transcripciones borradas a los 30 días.
 - **La cuenta de Meta tiene que poder migrarse:** identificadores en variables de entorno y plantillas versionadas en el repositorio.
@@ -50,12 +53,14 @@ Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios
 - **TypeScript 6.0:** `typescript-eslint` todavía no soporta TypeScript 7. Revisar al actualizar.
 - **Alcance del MVP:** padrino por email, sin panel; métricas por script; simulador en una página simple; sin staging ([ADR 0006](docs/adr/0006-recortes-del-mvp.md)).
 - **Motor y rachas:** máquina de estados pura y racha sin castigo ([ADR 0007](docs/adr/0007-motor-de-lecciones.md)).
+- **Tutor:** proveedor simulado por defecto; Claude Haiku 5.5 con `LLM_PROVIDER=anthropic`. Tope de USD 0,01 por persona y por día ([ADR 0008](docs/adr/0008-tutor-guardrails-y-evals.md)).
 - **Dependencias por fase:** pg-boss entra cuando se use por primera vez. React queda afuera del MVP.
 - **Metas del piloto:** retención a 14 días como métrica principal, repaso del día 30 como dato complementario. Menos de ARS 500 por usuario por mes para IA. La mensajería se mide aparte y va al VAN.
 
 ## Estado
 
-Fase 1: dominio y contenido, en revisión. Las 10 lecciones están en borrador, a la espera del rol de contenidos.
+- **Fase 1:** dominio y contenido, en revisión (PR #2). Las 10 lecciones están en borrador, a la espera del rol de contenidos.
+- **Fase 2:** tutor de IA, hecha en una sesión autónoma, en revisión. Sale de la rama de la Fase 1. Decisiones a revisar en [docs/decisiones-pendientes.md](docs/decisiones-pendientes.md); resumen en [docs/resumen-sesion.md](docs/resumen-sesion.md).
 
 - **Plan de las fases que faltan, con sus criterios:** [docs/plan-de-fases.md](docs/plan-de-fases.md).
 - **Dónde quedamos y qué falta decidir:** [docs/continuar-en-otra-pc.md](docs/continuar-en-otra-pc.md).

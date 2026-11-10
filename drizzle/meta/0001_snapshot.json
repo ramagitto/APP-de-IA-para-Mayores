@@ -76,12 +76,8 @@
           "name": "consents_user_id_users_id_fk",
           "tableFrom": "consents",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -197,12 +193,8 @@
           "name": "lesson_attempts_user_id_users_id_fk",
           "tableFrom": "lesson_attempts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -262,12 +254,8 @@
           "name": "streaks_user_id_users_id_fk",
           "tableFrom": "streaks",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -385,12 +373,8 @@
           "name": "usage_costs_user_id_users_id_fk",
           "tableFrom": "usage_costs",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -460,9 +444,7 @@
         "users_phone_hash_unique": {
           "name": "users_phone_hash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "phone_hash"
-          ]
+          "columns": ["phone_hash"]
         }
       },
       "policies": {},
@@ -479,46 +461,27 @@
     "public.challenge_outcome": {
       "name": "challenge_outcome",
       "schema": "public",
-      "values": [
-        "done",
-        "not_done"
-      ]
+      "values": ["done", "not_done"]
     },
     "public.consent_type": {
       "name": "consent_type",
       "schema": "public",
-      "values": [
-        "terms_and_privacy",
-        "whatsapp_opt_in",
-        "sponsor_sharing"
-      ]
+      "values": ["terms_and_privacy", "whatsapp_opt_in", "sponsor_sharing"]
     },
     "public.lesson_attempt_state": {
       "name": "lesson_attempt_state",
       "schema": "public",
-      "values": [
-        "awaiting_practice",
-        "awaiting_challenge_report",
-        "completed",
-        "abandoned"
-      ]
+      "values": ["awaiting_practice", "awaiting_challenge_report", "completed", "abandoned"]
     },
     "public.lesson_trigger": {
       "name": "lesson_trigger",
       "schema": "public",
-      "values": [
-        "user_message",
-        "reminder"
-      ]
+      "values": ["user_message", "reminder"]
     },
     "public.user_status": {
       "name": "user_status",
       "schema": "public",
-      "values": [
-        "onboarding",
-        "active",
-        "paused"
-      ]
+      "values": ["onboarding", "active", "paused"]
     }
   },
   "schemas": {},

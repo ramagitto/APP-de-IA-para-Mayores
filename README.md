@@ -2,7 +2,7 @@
 
 Charlá enseña a personas de 65 años o más a usar la inteligencia artificial para resolver cosas del día a día, con lecciones cortas por WhatsApp. No hace falta instalar ninguna app. Es un MVP para un piloto de 30 personas, desarrollado en la materia Dirección de Proyectos Informáticos (Ingeniería en Informática, USAL).
 
-**Estado:** Fase 1. Ya se puede recorrer una lección por consola, con un tutor simulado. Todavía no hay IA real ni integración con WhatsApp.
+**Estado:** Fase 2, en revisión. Ya se puede recorrer una lección por consola, con el tutor de IA y sus controles de seguridad. Por defecto usa un proveedor de IA simulado, que no gasta plata. Todavía no hay integración con WhatsApp.
 
 ## Levantar el proyecto
 
@@ -31,6 +31,17 @@ npm run lesson:play -- n1-l01
 npm run lesson:play -- n1-l01 --recordatorio
 ```
 
+## Probar el tutor con IA real
+
+Por defecto el tutor usa un proveedor simulado. Para usar Claude, agregá al `.env`:
+
+```bash
+LLM_PROVIDER=anthropic
+ANTHROPIC_API_KEY=tu-clave
+```
+
+Con eso, `npm run lesson:play` y `npm run evals` usan el modelo real. **Cada llamada cuesta plata**, aunque poco: el tope es de USD 0,01 por persona y por día.
+
 ## Comandos
 
 | Comando                    | Qué hace                                                 |
@@ -41,6 +52,7 @@ npm run lesson:play -- n1-l01 --recordatorio
 | `npm run check`            | Corre formato, lint, tipos, tests unitarios y build      |
 | `npm run lessons:check`    | Valida las lecciones y los feriados                      |
 | `npm run lesson:play`      | Recorre una lección por consola                          |
+| `npm run evals`            | Corre las 43 evals del tutor y mide su costo             |
 | `npm run db:generate`      | Crea una migración a partir de los cambios en el esquema |
 | `npm run db:migrate`       | Aplica las migraciones pendientes                        |
 | `npm run db:seed`          | Carga datos de prueba, con teléfonos inventados          |
