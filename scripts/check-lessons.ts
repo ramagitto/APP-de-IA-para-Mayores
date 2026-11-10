@@ -1,6 +1,12 @@
-// Valida el contenido editable: lecciones, feriados y líneas de ayuda. npm run lessons:check
+// Valida el contenido editable: lecciones, feriados, líneas de ayuda, textos del alta y
+// plantillas de WhatsApp. npm run lessons:check
 import { readFileSync } from 'node:fs';
 import { readLessonSources, validateLessons } from '../src/modules/lessons/lesson.loader.js';
+import {
+  CONSENT_FILE,
+  type ConsentContent,
+  parseConsentContent,
+} from '../src/modules/onboarding/consent-content.js';
 import {
   HELPLINES_FILE,
   type Helplines,
@@ -26,6 +32,13 @@ try {
   errors.push(`${HELPLINES_FILE}: ${(error as Error).message}`);
 }
 
+let consent: ConsentContent | undefined;
+try {
+  consent = parseConsentContent(readFileSync(CONSENT_FILE, 'utf8'));
+} catch (error) {
+  errors.push(`${CONSENT_FILE}: ${(error as Error).message}`);
+}
+
 if (errors.length > 0) {
   console.error(`Encontré ${errors.length} problema(s):\n`);
   for (const error of errors) console.error(`- ${error}`);
@@ -46,4 +59,10 @@ for (const line of stale) {
 
 if (CARE_MESSAGES_REVIEW === 'borrador') {
   console.warn('Aviso: los mensajes de cuidado siguen en borrador. Se revisan antes del piloto.');
+}
+
+if (consent?.revision === 'borrador') {
+  console.warn(
+    'Aviso: los textos del alta siguen en borrador. Los revisa alguien con formación legal.',
+  );
 }

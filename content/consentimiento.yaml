@@ -1,0 +1,40 @@
+# Textos del alta y de las palabras reservadas. Los edita el rol de contenidos.
+#
+# BORRADOR: antes del piloto los revisa alguien con formación legal (Ley 25.326).
+# Si se cambia el texto del pedido de consentimiento, hay que subir la versión: queda guardada
+# junto con cada consentimiento, para saber qué aceptó cada persona.
+version: v1-borrador
+revision: borrador
+
+pedido: >-
+  ¡Hola! Soy Charlá, un curso para aprender a usar la inteligencia artificial en el día a día,
+  con lecciones de unos 3 minutos por WhatsApp. Antes de empezar, necesito tu permiso.
+
+  Vamos a guardar tus datos de contacto de WhatsApp y tu avance en el curso. Para corregir tus
+  prácticas usamos servicios de inteligencia artificial de otras empresas, fuera de Argentina.
+  Tus audios se pasan a texto y se borran enseguida.
+
+  Charlá nunca te va a pedir claves, códigos ni datos de tu cuenta. Cuando quieras, escribí BAJA
+  y borramos todos tus datos. Si necesitás hablar con una persona, escribí AYUDA.
+
+  Si estás de acuerdo, respondé ACEPTO. Si no, respondé NO.
+
+recordatorio: >-
+  Para empezar necesito tu permiso. Respondé por escrito ACEPTO para empezar, o NO si no querés
+  recibir mensajes.
+
+bienvenida: >-
+  ¡Gracias! Ya está todo listo. Cada día de semana te espera una lección de unos 3 minutos.
+  Escribime cuando quieras y arrancamos la primera.
+
+rechazo: >-
+  Entendido. No guardamos tus datos y no te vamos a escribir. Si algún día querés probar,
+  escribinos de nuevo.
+
+baja: >-
+  Listo. Borramos todos tus datos y no te vamos a escribir más. Gracias por haber sido parte de
+  Charlá.
+
+ayuda: >-
+  Listo, le avisamos a una persona del equipo para que te escriba por acá. Mientras tanto,
+  acordate: Charlá nunca te pide claves ni códigos.

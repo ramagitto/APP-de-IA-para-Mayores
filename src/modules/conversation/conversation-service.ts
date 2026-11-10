@@ -18,8 +18,6 @@ import { careResponseFor } from '../safety/safety-messages.js';
 import type { LessonCalendar } from '../streaks/lesson-calendar.js';
 import { canStartLesson, currentStreak, type Streak } from '../streaks/streak.js';
 import { getStreak, saveStreak } from '../streaks/streaks.repository.js';
-import type { PhoneKeys } from '../users/phone.js';
-import { createUser, deleteUser, findUserByPhone } from '../users/users.repository.js';
 import type { VoiceService } from '../voice/voice-service.js';
 
 export const INFO_MESSAGES = {
@@ -28,11 +26,13 @@ export const INFO_MESSAGES = {
   allDone: '¡Terminaste todas las lecciones que tenemos por ahora! Pronto vamos a sumar más.',
 };
 
-export interface IncomingMessage {
-  phone: string;
+export interface LessonMessage {
+  /** La persona ya dio su consentimiento: existe en `users`. */
+  userId: string;
+  /** Texto escrito o la transcripción del audio. */
+  text: string;
+  inputWasAudio: boolean;
   now: Date;
-  text?: string;
-  audio?: { data: Buffer; mimeType: string; hintText?: string };
 }
 
 export interface ReplyMessage extends OutgoingMessage {
@@ -41,8 +41,6 @@ export interface ReplyMessage extends OutgoingMessage {
 }
 
 export interface ConversationReply {
-  /** Lo que se entendió del audio, para mostrarlo en el simulador. Nunca se guarda. */
-  transcript?: string;
   messages: ReplyMessage[];
   status: {
     lessonId?: string;
@@ -54,7 +52,6 @@ export interface ConversationReply {
 
 export interface ConversationDeps {
   orm: Orm;
-  keys: PhoneKeys;
   lessons: Lesson[];
   calendar: LessonCalendar;
   tutor: Tutor;
@@ -67,36 +64,24 @@ interface TurnOutcome {
   streak: Streak;
 }
 
-// Atiende un mensaje entrante, venga del canal que venga. El simulador ya lo usa, y la Fase 4
-// lo va a usar desde WhatsApp. Las palabras BAJA y AYUDA llegan en esa fase.
+// Atiende el mensaje de una persona ya registrada, venga del canal que venga. El alta, las
+// palabras BAJA y AYUDA y la transcripción las resuelve antes MessageRouter.
 export class ConversationService {
   constructor(private readonly deps: ConversationDeps) {}
 
-  async handle(incoming: IncomingMessage): Promise<ConversationReply> {
-    const { orm, keys, calendar } = this.deps;
-    const user =
-      (await findUserByPhone(orm, keys, incoming.phone)) ??
-      (await createUser(orm, keys, { phone: incoming.phone }));
+  async handle(incoming: LessonMessage): Promise<ConversationReply> {
+    const { orm, calendar } = this.deps;
+    const { userId } = incoming;
+    const text = incoming.text.trim();
 
-    let text = incoming.text?.trim() ?? '';
-    let transcript: string | undefined;
-
-    if (incoming.audio) {
-      // El audio solo vive en memoria mientras se transcribe: no se guarda.
-      const { data, mimeType, hintText } = incoming.audio;
-      transcript = await this.deps.voice.transcribe({ audio: data, mimeType, hintText }, user.id);
-      text = transcript;
-    }
-
-    const streak = await getStreak(orm, user.id);
+    const streak = await getStreak(orm, userId);
     const outcome: TurnOutcome =
       text.length === 0
         ? { messages: [info(INFO_MESSAGES.unclearAudio)], streak }
-        : await this.respond(user.id, text, streak, incoming.now);
+        : await this.respond(userId, text, streak, incoming.now);
 
     return {
-      transcript,
-      messages: await this.withAudio(outcome.messages, Boolean(incoming.audio), user.id),
+      messages: await this.withAudio(outcome.messages, incoming.inputWasAudio, userId),
       status: {
         ...(outcome.attempt && {
           lessonId: outcome.attempt.lessonId,
@@ -106,12 +91,6 @@ export class ConversationService {
         streak: currentStreak(outcome.streak, incoming.now, calendar),
       },
     };
-  }
-
-  /** Borra a la persona y todos sus datos. La Fase 4 lo usa para la palabra BAJA. */
-  async forget(phone: string): Promise<void> {
-    const user = await findUserByPhone(this.deps.orm, this.deps.keys, phone);
-    if (user) await deleteUser(this.deps.orm, user.id);
   }
 
   private async respond(

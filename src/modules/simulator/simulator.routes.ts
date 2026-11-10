@@ -1,12 +1,13 @@
 import { createHash } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import type { ConversationService } from '../conversation/conversation-service.js';
+import type { MessageRouter } from '../conversation/message-router.js';
+import { phoneContact } from '../users/contact.js';
 import type { AudioStore } from '../voice/audio-store.js';
 import { SIMULATOR_PAGE } from './simulator-page.js';
 
 export interface SimulatorDeps {
-  conversation: Pick<ConversationService, 'handle' | 'forget'>;
+  router: Pick<MessageRouter, 'handle' | 'forget'>;
   audioStore: AudioStore;
   now?: () => Date;
 }
@@ -56,8 +57,8 @@ export function registerSimulatorRoutes(app: FastifyInstance, deps: SimulatorDep
     if (!parsed.success) return reply.code(400).send({ error: 'Pedido inválido' });
 
     const { sessionId, text, audio, clockOffsetDays } = parsed.data;
-    const result = await deps.conversation.handle({
-      phone: simulatedPhone(sessionId),
+    const result = await deps.router.handle({
+      contact: phoneContact(simulatedPhone(sessionId)),
       now: new Date(now().getTime() + clockOffsetDays * DAY_MS),
       text,
       audio: audio && {
@@ -90,7 +91,7 @@ export function registerSimulatorRoutes(app: FastifyInstance, deps: SimulatorDep
     const parsed = resetSchema.safeParse(request.body);
     if (!parsed.success) return reply.code(400).send({ error: 'Pedido inválido' });
 
-    await deps.conversation.forget(simulatedPhone(parsed.data.sessionId));
+    await deps.router.forget(phoneContact(simulatedPhone(parsed.data.sessionId)));
     return { ok: true };
   });
 }

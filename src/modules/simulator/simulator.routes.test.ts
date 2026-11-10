@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildApp } from '../../app.js';
-import type { IncomingMessage } from '../conversation/conversation-service.js';
+import type { IncomingMessage } from '../conversation/message-router.js';
+import { phoneContact } from '../users/contact.js';
 import { InMemoryAudioStore } from '../voice/audio-store.js';
 import { simulatedPhone } from './simulator.routes.js';
 
@@ -11,11 +12,12 @@ function setup() {
   const received: IncomingMessage[] = [];
   const forgotten: string[] = [];
   const audioStore = new InMemoryAudioStore();
-  const conversation = {
+  const router = {
     handle: async (incoming: IncomingMessage) => {
       received.push(incoming);
       return {
         transcript: incoming.audio ? 'hola' : undefined,
+        forgotten: false,
         status: { streak: 0 },
         messages: [
           { kind: 'intro' as const, format: 'audio' as const, text: 'Hola', audioId },
@@ -30,7 +32,7 @@ function setup() {
   const app = buildApp({
     logLevel: 'silent',
     checkDatabase: async () => {},
-    simulator: { conversation, audioStore, now: () => new Date('2027-05-03T13:00:00Z') },
+    simulator: { router, audioStore, now: () => new Date('2027-05-03T13:00:00Z') },
   });
 
   return { app, received, forgotten, audioStore };
@@ -63,7 +65,10 @@ describe('simulador', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(received[0]).toMatchObject({ phone: simulatedPhone(sessionId), text: 'hola' });
+    expect(received[0]).toMatchObject({
+      contact: phoneContact(simulatedPhone(sessionId)),
+      text: 'hola',
+    });
     expect(response.json().messages).toEqual([
       { kind: 'intro', format: 'audio', text: 'Hola', audioUrl: `/simulador/audio/${audioId}` },
       { kind: 'info', format: 'text', text: 'Aviso', audioUrl: null },
@@ -136,7 +141,7 @@ describe('simulador', () => {
 
     await app.inject({ method: 'POST', url: '/simulador/reiniciar', payload: { sessionId } });
 
-    expect(forgotten).toEqual([simulatedPhone(sessionId)]);
+    expect(forgotten).toEqual([phoneContact(simulatedPhone(sessionId))]);
   });
 
   it('un error interno no muestra detalles', async () => {
@@ -144,7 +149,7 @@ describe('simulador', () => {
       logLevel: 'silent',
       checkDatabase: async () => {},
       simulator: {
-        conversation: {
+        router: {
           handle: async () => {
             throw new Error('detalle interno con datos');
           },
