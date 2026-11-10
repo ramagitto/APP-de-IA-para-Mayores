@@ -1,6 +1,6 @@
 import type { Env } from '../../config/env.js';
 import type { CostLedger } from '../tutor/cost-ledger.js';
-import { FileAudioStore } from './audio-store.js';
+import { type AudioStore, FileAudioStore } from './audio-store.js';
 import { AzureTextToSpeech } from './azure-tts.js';
 import { MockSpeechToText, MockTextToSpeech } from './mock-speech.js';
 import { OpenAiSpeechToText } from './openai-stt.js';
@@ -25,11 +25,15 @@ export function createTextToSpeech(env: Env): TextToSpeech {
   return new MockTextToSpeech();
 }
 
-export function createVoiceService(env: Env, ledger: CostLedger): VoiceService {
+export function createVoiceService(
+  env: Env,
+  ledger: CostLedger,
+  store: AudioStore = new FileAudioStore(env.AUDIO_CACHE_DIR),
+): VoiceService {
   return new VoiceService({
     stt: createSpeechToText(env),
     tts: createTextToSpeech(env),
-    store: new FileAudioStore(env.AUDIO_CACHE_DIR),
+    store,
     ledger,
     dailyBudgetUsd: env.TUTOR_DAILY_BUDGET_USD,
   });
