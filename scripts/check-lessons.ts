@@ -16,6 +16,7 @@ import {
 } from '../src/modules/safety/helplines.js';
 import { CARE_MESSAGES_REVIEW } from '../src/modules/safety/safety-messages.js';
 import { parseHolidays } from '../src/modules/streaks/lesson-calendar.js';
+import { parseTemplates, TEMPLATES_FILE } from '../src/modules/whatsapp/templates.js';
 
 const { lessons, errors } = validateLessons(readLessonSources('content/lessons'));
 
@@ -30,6 +31,12 @@ try {
   helplines = parseHelplines(readFileSync(HELPLINES_FILE, 'utf8'));
 } catch (error) {
   errors.push(`${HELPLINES_FILE}: ${(error as Error).message}`);
+}
+
+try {
+  parseTemplates(readFileSync(TEMPLATES_FILE, 'utf8'));
+} catch (error) {
+  errors.push(`${TEMPLATES_FILE}: ${(error as Error).message}`);
 }
 
 let consent: ConsentContent | undefined;

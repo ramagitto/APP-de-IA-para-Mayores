@@ -1,0 +1,33 @@
+# Plantillas de WhatsApp: los únicos mensajes que se pueden mandar fuera de la ventana de 24
+# horas. Meta revisa cada una antes de aprobarla. Viven acá, versionadas, para poder recrearlas
+# si se migra el número a otra cuenta. Ver docs/plantillas-whatsapp.md.
+#
+# Sin el nombre de la persona: no lo guardamos (datos mínimos).
+idioma: es_AR
+plantillas:
+  - nombre: charla_recordatorio
+    categoria_esperada: marketing
+    uso: Recordatorio del día. Máximo 1 por día, solo si la persona no escribió (Fase 5).
+    cuerpo: >-
+      Hola, tu lección de hoy de Charlá te está esperando. Son unos 3 minutos. Cuando quieras,
+      contestá este mensaje y arrancamos. Si no querés recibir más mensajes, escribí BAJA.
+    ejemplos: []
+
+  - nombre: charla_repaso
+    categoria_esperada: marketing
+    uso: Lección de repaso del día 30 (Fase 5).
+    cuerpo: >-
+      Hola, pasó un tiempo desde tu curso de Charlá. Preparamos un repaso cortito, de unos 3
+      minutos. Si querés hacerlo, contestá este mensaje. Si no querés recibir más mensajes,
+      escribí BAJA.
+    ejemplos: []
+
+  - nombre: charla_respuesta_equipo
+    categoria_esperada: utility
+    uso: >-
+      Respuesta de una persona del equipo a un pedido de AYUDA, cuando pasaron más de 24 horas
+      desde el último mensaje de la persona.
+    cuerpo: >-
+      Hola, te escribe una persona del equipo de Charlá por tu pedido de ayuda. Respondé este
+      mensaje y seguimos hablando por acá. Charlá nunca te va a pedir claves ni códigos.
+    ejemplos: []
