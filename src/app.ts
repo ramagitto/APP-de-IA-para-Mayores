@@ -10,14 +10,29 @@ export interface AppOptions {
   checkDatabase: DatabaseCheck;
   /** Solo en local: el simulador no tiene login. */
   simulator?: SimulatorDeps;
+  /** Solo para tests: a dónde se escriben los logs. */
+  logStream?: NodeJS.WritableStream;
 }
 
-export function buildApp({ logLevel, checkDatabase, simulator }: AppOptions): FastifyInstance {
+export function buildApp({
+  logLevel,
+  checkDatabase,
+  simulator,
+  logStream,
+}: AppOptions): FastifyInstance {
   const app = Fastify({
     logger: {
       level: logLevel,
+      ...(logStream && { stream: logStream }),
       // Por ley y por diseño, en los logs no van datos personales ni secretos.
       redact: ['req.headers.authorization', 'req.headers.cookie', 'req.remoteAddress'],
+      serializers: {
+        // Sin la query: la verificación del webhook trae ahí el token de verificación.
+        req: (request: { method: string; url: string }) => ({
+          method: request.method,
+          url: request.url.split('?')[0],
+        }),
+      },
     },
   });
 

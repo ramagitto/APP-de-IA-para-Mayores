@@ -1,47 +1,47 @@
-import { readFileSync } from 'node:fs';
 import { buildApp } from './app.js';
+import { buildServices } from './composition.js';
 import { loadEnv } from './config/env.js';
-import { ConversationService } from './modules/conversation/conversation-service.js';
-import { loadLessons } from './modules/lessons/lesson.loader.js';
-import type { SimulatorDeps } from './modules/simulator/simulator.routes.js';
-import { createLessonCalendar, parseHolidays } from './modules/streaks/lesson-calendar.js';
-import { createTutor } from './modules/tutor/create-tutor.js';
-import { DbCostLedger } from './modules/tutor/usage-costs.repository.js';
-import { phoneKeysFromBase64 } from './modules/users/phone.js';
-import { FileAudioStore } from './modules/voice/audio-store.js';
-import { createVoiceService } from './modules/voice/create-voice.js';
-import { createDatabase, createOrm, type Database, pingDatabase } from './shared/db/database.js';
+import { createWhatsAppApi, createWhatsAppProcessor } from './modules/whatsapp/create-whatsapp.js';
+import { PgBossQueue } from './modules/whatsapp/job-queue.js';
+import { registerWhatsAppWebhook } from './modules/whatsapp/webhook.routes.js';
+import { createDatabase, createOrm, pingDatabase } from './shared/db/database.js';
 
 const env = loadEnv();
 const database = createDatabase(env.DATABASE_URL);
-
-function buildSimulator(db: Database): SimulatorDeps {
-  const orm = createOrm(db);
-  const ledger = new DbCostLedger(orm);
-  const audioStore = new FileAudioStore(env.AUDIO_CACHE_DIR);
-
-  return {
-    audioStore,
-    conversation: new ConversationService({
-      orm,
-      keys: phoneKeysFromBase64(env.PHONE_ENCRYPTION_KEY, env.PHONE_HASH_KEY),
-      lessons: loadLessons('content/lessons'),
-      calendar: createLessonCalendar(parseHolidays(readFileSync('content/feriados.yaml', 'utf8'))),
-      tutor: createTutor(env, ledger),
-      voice: createVoiceService(env, ledger, audioStore),
-    }),
-  };
-}
+const services = buildServices(env, createOrm(database));
 
 const app = buildApp({
   logLevel: env.LOG_LEVEL,
   checkDatabase: () => pingDatabase(database),
   // El simulador no tiene login: solo existe en local.
-  simulator: env.APP_ENV === 'local' ? buildSimulator(database) : undefined,
+  simulator:
+    env.APP_ENV === 'local'
+      ? { router: services.router, audioStore: services.audioStore }
+      : undefined,
 });
+
+// WhatsApp: solo si está configurado (WHATSAPP_PROVIDER distinto de disabled).
+const whatsappApi = createWhatsAppApi(env);
+let queue: PgBossQueue | undefined;
+
+if (whatsappApi && env.WHATSAPP_APP_SECRET && env.WHATSAPP_VERIFY_TOKEN) {
+  const processor = createWhatsAppProcessor(env, services, whatsappApi, (event) =>
+    app.log.info(event, 'WhatsApp'),
+  );
+  queue = new PgBossQueue(env.DATABASE_URL);
+  processor.useQueue(queue);
+  await queue.start((eventId) => processor.process(eventId));
+
+  registerWhatsAppWebhook(app, {
+    appSecret: env.WHATSAPP_APP_SECRET,
+    verifyToken: env.WHATSAPP_VERIFY_TOKEN,
+    processor,
+  });
+}
 
 async function shutdown(): Promise<void> {
   await app.close();
+  await queue?.stop();
   await database.end();
 }
 
@@ -52,4 +52,7 @@ await app.listen({ host: '0.0.0.0', port: env.PORT });
 
 if (env.APP_ENV === 'local') {
   app.log.info(`Simulador en http://localhost:${env.PORT}/simulador`);
+}
+if (whatsappApi) {
+  app.log.info(`Webhook de WhatsApp (${env.WHATSAPP_PROVIDER}) en /webhooks/whatsapp`);
 }

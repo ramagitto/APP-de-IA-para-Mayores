@@ -7,7 +7,8 @@ import { insertAttempt } from '../src/modules/lessons/lesson-attempts.repository
 import { loadLessons } from '../src/modules/lessons/lesson.loader.js';
 import { saveStreak } from '../src/modules/streaks/streaks.repository.js';
 import { phoneKeysFromBase64 } from '../src/modules/users/phone.js';
-import { createUser, findUserByPhone } from '../src/modules/users/users.repository.js';
+import { phoneContact } from '../src/modules/users/contact.js';
+import { createUser, findUserByContact } from '../src/modules/users/users.repository.js';
 import { createDatabase, createOrm } from '../src/shared/db/database.js';
 
 const env = loadEnv();
@@ -33,9 +34,10 @@ try {
   let created = 0;
 
   for (const testUser of testUsers) {
-    if (await findUserByPhone(orm, keys, testUser.phone)) continue;
+    const contact = phoneContact(testUser.phone);
+    if (await findUserByContact(orm, keys, contact)) continue;
 
-    const user = await createUser(orm, keys, testUser);
+    const user = await createUser(orm, keys, { contact, firstName: testUser.firstName });
     await recordConsent(orm, {
       userId: user.id,
       type: 'terms_and_privacy',

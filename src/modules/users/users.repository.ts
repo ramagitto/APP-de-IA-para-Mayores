@@ -1,22 +1,24 @@
 import { eq } from 'drizzle-orm';
 import type { Orm } from '../../shared/db/database.js';
 import { users } from '../../shared/db/schema.js';
-import { encryptPhone, hashPhone, normalizePhone, type PhoneKeys } from './phone.js';
+import { type ContactId, encryptContact, hashContact } from './contact.js';
+import type { PhoneKeys } from './phone.js';
 
 export type User = typeof users.$inferSelect;
 
+// Solo el alta, después del consentimiento explícito, crea personas (ver src/modules/onboarding).
 export async function createUser(
   orm: Orm,
   keys: PhoneKeys,
-  input: { phone: string; firstName?: string },
+  input: { contact: ContactId; firstName?: string },
 ): Promise<User> {
-  const phone = normalizePhone(input.phone);
   const [user] = await orm
     .insert(users)
     .values({
-      phoneHash: hashPhone(phone, keys),
-      phoneEncrypted: encryptPhone(phone, keys),
+      contactHash: hashContact(input.contact, keys),
+      contactEncrypted: encryptContact(input.contact, keys),
       firstName: input.firstName,
+      status: 'active',
     })
     .returning();
 
@@ -24,18 +26,20 @@ export async function createUser(
   return user;
 }
 
-export async function findUserByPhone(
+export async function findUserByContact(
   orm: Orm,
   keys: PhoneKeys,
-  rawPhone: string,
+  contact: ContactId,
 ): Promise<User | undefined> {
-  const phoneHash = hashPhone(normalizePhone(rawPhone), keys);
-  const [user] = await orm.select().from(users).where(eq(users.phoneHash, phoneHash));
+  const [user] = await orm
+    .select()
+    .from(users)
+    .where(eq(users.contactHash, hashContact(contact, keys)));
 
   return user;
 }
 
-// Borra también sus consentimientos, intentos y rachas (ON DELETE CASCADE).
+// Borra también sus consentimientos, intentos, rachas y pedidos de ayuda (ON DELETE CASCADE).
 export async function deleteUser(orm: Orm, userId: string): Promise<void> {
   await orm.delete(users).where(eq(users.id, userId));
 }

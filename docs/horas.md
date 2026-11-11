@@ -58,6 +58,21 @@ También la hizo Claude en una sesión autónoma: anotá solo tu tiempo de revis
 | **Total**                                             | **19 h** |
 | Tu revisión, prueba en Chrome y con claves (estimado) | 3 a 5 h  |
 
+## Detalle estimado de la Fase 4
+
+También la hizo Claude en una sesión autónoma. Lo que te toca a vos es conectar el número real (unas 3 a 5 h, con los tiempos de espera de Meta) y revisar el PR.
+
+| Tarea                                                     | Estimado |
+| --------------------------------------------------------- | -------- |
+| Identidad por contacto y alta con consentimiento primero  | 6 h      |
+| BAJA, AYUDA y herramienta de soporte                      | 5 h      |
+| Webhook: verificación, firma, idempotencia y cola         | 8 h      |
+| Cloud API: texto, notas de voz, plantillas y descarga     | 6 h      |
+| Envío con reintentos sin duplicar y límite por persona    | 4 h      |
+| Plantillas, pasos para conectar el número y documentación | 6 h      |
+| **Total**                                                 | **35 h** |
+| Conectar el número real y probarlo (estimado)             | 3 a 5 h  |
+
 ## Cuándo reaccionar
 
 Si al cerrar una fase el total acumulado supera lo estimado **con margen**, el plan ya no entra. En ese caso, antes de empezar la fase siguiente, se decide entre recortar más o usar parte de abril.

@@ -41,20 +41,22 @@ Más detalle en el [ADR 0005](adr/0005-whatsapp-inicio-por-usuario-y-curso-cerra
 
 ## Modelo de datos inicial
 
-| Tabla                | Para qué sirve                                                        | Desde      |
-| -------------------- | --------------------------------------------------------------------- | ---------- |
-| `users`              | Teléfono cifrado y un hash para buscarlo, hora elegida, estado        | Fase 1     |
-| `consents`           | Qué aceptó cada persona, en qué versión y cuándo                      | Fase 1     |
-| `lesson_attempts`    | Intento de lección: estado, versión del contenido, quién lo inició    | Fase 1     |
-| `streaks`            | Racha actual y mejor racha, contada sobre lecciones programadas       | Fase 1     |
-| `conversation_turns` | Transcripciones, con fecha de vencimiento a los 30 días               | Fase 3 o 4 |
-| `usage_costs`        | Costo por usuario, por día y por proveedor                            | Fase 2     |
-| `inbound_events`     | Eventos recibidos, con ID único de Meta para no procesarlos dos veces | Fase 4     |
-| `outbound_messages`  | Mensajes enviados, con clave de idempotencia, categoría y costo       | Fase 4     |
-| `sponsors`           | Padrinos                                                              | Fase 6     |
-| `sponsor_links`      | Vínculo padrino-mayor, con el consentimiento del mayor                | Fase 6     |
-| `product_events`     | Alta, lección iniciada o completada, abandono, baja                   | Fase 7     |
-| `survey_responses`   | Encuesta de satisfacción al final de cada nivel                       | Fase 7     |
+| Tabla                | Para qué sirve                                                                        | Desde      |
+| -------------------- | ------------------------------------------------------------------------------------- | ---------- |
+| `users`              | Contacto (id de WhatsApp o teléfono) cifrado y con hash, hora elegida, estado         | Fase 1     |
+| `consents`           | Qué aceptó cada persona, en qué versión y cuándo                                      | Fase 1     |
+| `lesson_attempts`    | Intento de lección: estado, versión del contenido, quién lo inició                    | Fase 1     |
+| `streaks`            | Racha actual y mejor racha, contada sobre lecciones programadas                       | Fase 1     |
+| `conversation_turns` | Transcripciones, con fecha de vencimiento a los 30 días                               | Fase 3 o 4 |
+| `usage_costs`        | Costo por usuario, por día y por proveedor                                            | Fase 2     |
+| `inbound_events`     | Mensajes recibidos, con id único de Meta; el contenido, cifrado y borrado al procesar | Fase 4     |
+| `outbound_messages`  | Respuestas guardadas antes de enviar, para reintentar sin duplicar                    | Fase 4     |
+| `pending_signups`    | Alta en curso, antes del consentimiento: solo el hash del contacto                    | Fase 4     |
+| `support_requests`   | Pedidos de AYUDA y avisos de cuidado para una persona del equipo                      | Fase 4     |
+| `sponsors`           | Padrinos                                                                              | Fase 6     |
+| `sponsor_links`      | Vínculo padrino-mayor, con el consentimiento del mayor                                | Fase 6     |
+| `product_events`     | Alta, lección iniciada o completada, abandono, baja                                   | Fase 7     |
+| `survey_responses`   | Encuesta de satisfacción al final de cada nivel                                       | Fase 7     |
 
 Las lecciones no van en la base: `lesson_attempts` guarda el identificador y la versión del archivo YAML. Las tablas de fases futuras son un plan y pueden cambiar al implementarlas.
 

@@ -1,90 +1,102 @@
-# Resumen de la sesión autónoma del 10/11/2026 (segunda parte)
+# Resumen de la sesión autónoma del 10/11/2026 (tercera parte)
 
-La primera parte de la sesión (Fase 2) quedó en el historial de git de este archivo.
+Las partes anteriores (Fases 2 y 3) quedaron en el historial de git de este archivo.
 
 ## En una línea
 
-**Las líneas de ayuda están sumadas y la Fase 3 está hecha y en revisión, con la CI en verde.** El rebase del #3 sobre `main` sigue pendiente, porque el #2 todavía no está mergeado. No mergeé nada, no gasté plata, no creé cuentas y no toqué secretos ni permisos.
+**Las Fases 1 a 3 están mergeadas en `main`, y la Fase 4 está hecha y en revisión en el PR #5, con la CI en verde.** No conecté ningún número real, no creé cuentas, no pedí claves y no pusheé a `main`.
 
-## Pull requests
+## Merges autorizados
 
-| PR                                                               | Fase                             | Base                  | CI       | Estado                                |
-| ---------------------------------------------------------------- | -------------------------------- | --------------------- | -------- | ------------------------------------- |
-| [#2](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/2) | 1. Dominio y contenido           | `main`                | En verde | Abierto, para que lo mergees vos      |
-| [#3](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/3) | 2. Tutor de IA y líneas de ayuda | `feat/fase-1-dominio` | En verde | Abierto. Falta el rebase sobre `main` |
-| [#4](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/4) | 3. Simulador y voz               | `feat/fase-2-tutor`   | En verde | Abierto, espera tu OK                 |
+| PR                                                               | Fase                       | Squash en `main` | CI antes de mergear          |
+| ---------------------------------------------------------------- | -------------------------- | ---------------- | ---------------------------- |
+| [#2](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/2) | 1. Dominio y contenido     | `04afdec`        | En verde                     |
+| [#3](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/3) | 2. Tutor y líneas de ayuda | `2fb58bf`        | En verde, después del rebase |
+| [#4](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/4) | 3. Simulador y voz         | `fe01dd0`        | En verde, después del rebase |
 
-**Orden para mergear:** #2, después #3 y después #4.
+- **Rebases:** comprobé que no cambiaran el contenido; el diff contra la rama original dio vacío en los dos.
+- **CI de `main`:** en verde después del último merge.
+- **Ramas:** no borré ninguna, porque sigue prohibido. Las ramas viejas siguen en GitHub.
 
-## Lo que pediste sobre las líneas de ayuda
+## PR abierto
 
-Hecho, en el PR #3:
+| PR                                                               | Fase                            | Base   | CI       | Estado       |
+| ---------------------------------------------------------------- | ------------------------------- | ------ | -------- | ------------ |
+| [#5](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/5) | 4. WhatsApp, alta, BAJA y AYUDA | `main` | En verde | Espera tu OK |
 
-- Los mensajes de cuidado suman el **135** (gratis, CABA y GBA) y el **(011) 5275-1135** (todo el país), del Centro de Asistencia al Suicida.
-- Si no atienden en el 135, derivan al **0800-999-0091**, la línea de salud mental del Ministerio de Salud.
-- Para emergencias, **911 o 107**. Ojo: el 107 depende de cada jurisdicción (es el SAME en CABA y el servicio local en varias provincias).
-- **Sin horarios** en los mensajes.
-- Los números viven en [`content/lineas-de-ayuda.yaml`](../content/lineas-de-ayuda.yaml), con la fuente y la fecha de verificación de cada uno. `npm run lessons:check` avisa si pasaron más de 90 días.
-- Nueva [checklist del piloto](checklist-piloto.md), que incluye "reverificar las líneas de ayuda".
-- Los mensajes de cuidado quedaron marcados como **borrador** en el código (`CARE_MESSAGES_REVIEW`) y en [decisiones-pendientes.md](decisiones-pendientes.md). `npm run lessons:check` también lo avisa.
+## Qué quedó hecho en la Fase 4
 
-## Qué quedó hecho en la Fase 3
+**Decisión 26, implementada como la aprobaste:**
 
-- **Voz:** interfaces de voz a texto y texto a voz. Por defecto son simuladas; los adaptadores reales son OpenAI (`gpt-transcribe`) y Azure (`es-AR-ElenaNeural`, en nota de voz OGG/Opus). Hay caché de audios y el costo de voz se registra por persona y por día.
-- **Servicio de conversación independiente del canal:** transcribe, cuida a la persona, sigue o arranca la lección (una por día de lección), guarda el estado y agrega audio a las respuestas. WhatsApp lo va a reutilizar en la Fase 4.
-- **Simulador web** en `/simulador`, solo con `APP_ENV=local`: se puede escribir o hablar, pasar al día siguiente y empezar de nuevo.
-- **Seguridad:** un manejador de errores general, que nunca muestra detalles internos.
-- **Documentación:** [ADR 0009](adr/0009-voz-y-simulador.md), decisiones 19 a 33, `CHANGELOG`, horas, plan de fases, `README` y `CLAUDE.md`.
+- nadie se crea en `users` sin un ACEPTO explícito;
+- antes del ACEPTO, solo se guarda el hash del contacto, la fecha y la cantidad de pedidos;
+- con NO, o después de 3 pedidos sin respuesta, se borra;
+- antes de aceptar, un audio no se transcribe, porque mandarlo a un tercero ya sería tratar datos.
+
+**BAJA y AYUDA:**
+
+- **BAJA** borra a la persona, su avance, sus pedidos de ayuda y, después de mandar la despedida, sus mensajes en tránsito.
+- **AYUDA** abre un pedido que se atiende con `npm run support -- listar | responder | cerrar`. La respuesta sale desde el número de Charlá.
+- **Mensaje de cuidado:** también abre un pedido, marcado como prioridad.
+
+**Adaptador de WhatsApp**, contra payloads armados según la documentación oficial de Meta:
+
+- verificación del webhook y firma HMAC-SHA256 sobre el cuerpo exacto;
+- idempotencia por id de mensaje y cola con pg-boss;
+- respuestas guardadas antes de enviarse, así un reintento no duplica ni vuelve a correr la lección;
+- contenido cifrado, que se borra apenas se procesa o se envía;
+- texto, notas de voz (descarga y envío con `voice: true`) y plantillas;
+- respuesta por el id por empresa de WhatsApp (BSUID), que Meta recomienda porque el teléfono puede faltar;
+- límite de 20 mensajes por minuto por persona.
+
+**Plantillas:** tres textos listos para enviar a aprobación en [plantillas-whatsapp.md](plantillas-whatsapp.md), versionados en `content/plantillas-whatsapp.yaml` y validados con las reglas de Meta.
+
+**Pasos exactos para conectar el número:** en la [checklist del piloto](checklist-piloto.md), sección "Conectar el número de WhatsApp". Lo que no pude confirmar en la documentación está marcado como _(supuesto)_.
+
+**Para probar sin un número:** `WHATSAPP_PROVIDER=fake` y `npm run whatsapp:simulate -- "hola"`. Está en el README.
 
 ## Verificación
 
-| Control                                           | Resultado                                                                                |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Tests unitarios                                   | 358 de 358                                                                               |
-| Tests de integración (Postgres)                   | 24 de 24                                                                                 |
-| Evals con el proveedor simulado                   | Aprobadas                                                                                |
-| Lección completa por HTTP contra el servidor real | Funcionó: arranque, audio, cierre, racha, una por día, día siguiente, cuidado y reinicio |
-| Micrófono y voz en un navegador real              | **Sin verificar:** desde acá no puedo usar un navegador                                  |
-| CI de los PR #3 y #4                              | En verde                                                                                 |
+| Control                                                    | Resultado                                                                                                         |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Tests unitarios                                            | 412 de 412                                                                                                        |
+| Tests de integración (Postgres y pg-boss)                  | 40 de 40, en dos corridas seguidas                                                                                |
+| Evals                                                      | Aprobadas                                                                                                         |
+| De punta a punta contra el servidor, con webhooks firmados | Verificación OK (200), token equivocado (403), sin firma (401); consentimiento, bienvenida, lección, AYUDA y BAJA |
+| Logs                                                       | Ningún id, texto ni contacto                                                                                      |
+| CI del PR #5                                               | En verde                                                                                                          |
 
-## Hallazgo importante
+## Problemas encontrados y resueltos
 
-**OpenAI da de baja `gpt-4o-mini-transcribe` el 26/2/2027**, antes del piloto. Es el modelo de voz a texto que elegimos en el ADR 0003. Cambié a `gpt-transcribe`, que es el reemplazo que recomienda OpenAI: el proveedor es el mismo, así que el stack no cambia. Cuesta unos USD 0,0045 por minuto, un 50% más, pero el monto sigue siendo muy chico.
+- **Token en los logs:** el de verificación del webhook quedaba registrado, porque Fastify guarda la URL completa. Ahora los logs no guardan la query, y hay un test que lo controla.
+- **Test inestable:** el de pg-boss falló una vez, porque un servidor de prueba que dejé corriendo se quedaba con los trabajos de la cola. Cerré ese proceso y el test ahora usa una cola propia.
+- **Identidad:** Meta manda un id por empresa (BSUID) y el teléfono puede faltar. Las personas pasan a identificarse por "contacto" (`wa:` o `tel:`).
 
 ## Decisiones tomadas sin vos
 
-Están las 15 nuevas (de la 19 a la 33) en [decisiones-pendientes.md](decisiones-pendientes.md). Las que más importan:
+Están las 19 nuevas (de la 34 a la 52) en [decisiones-pendientes.md](decisiones-pendientes.md). Las de importancia alta:
 
-- **26. El servicio de conversación crea a la persona con su primer mensaje, sin consentimiento.** Alcanza para el simulador, pero en la Fase 4 el alta con opt-in tiene que ir primero.
-- **22. Con los proveedores simulados, el simulador usa la voz del navegador**, que en Chrome manda el audio a Google. Solo sirve para demos locales, y la página lo avisa.
-- **23. Cuándo va audio:** la intro siempre; el resto, solo si la persona habló; el cuidado, siempre en texto.
-- **20. La cola con pg-boss pasó a la Fase 4.**
+- **34. Identificar por contacto** (BSUID o teléfono).
+- **37. No transcribir audios antes del consentimiento.**
+- **38. El texto del consentimiento está en borrador:** lo escribí yo, y lo tiene que revisar alguien con formación legal.
+- **41. AYUDA se atiende con un script** y responde desde el número de Charlá.
+- **42. Un mensaje de cuidado también avisa al equipo.**
 
-## Qué quedó bloqueado
+## Qué quedó bloqueado o pendiente
 
-| Qué                                 | Por qué                              | Qué hace falta                                                                           |
-| ----------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------- |
-| Rebase del #3 sobre `main`          | El #2 no está mergeado               | Mergear el #2. Después, el rebase son estos tres comandos, y lo hago yo cuando me avises |
-| Probar la voz real                  | No hay claves de OpenAI ni de Azure  | Crear las cuentas y cargar las claves en el `.env`                                       |
-| Probar el tutor con un modelo real  | No hay clave de Anthropic            | Lo mismo                                                                                 |
-| Probar el micrófono en un navegador | No puedo usar un navegador desde acá | Abrir el simulador en Chrome                                                             |
-
-Los comandos del rebase, para cuando el #2 esté mergeado:
-
-```bash
-git fetch origin
-git switch feat/fase-2-tutor
-git rebase --onto origin/main origin/feat/fase-1-dominio
-git push --force-with-lease
-```
-
-Después, si GitHub no lo hace solo, hay que cambiar la base del PR #3 a `main`.
+| Qué                                                                      | Por qué                                                        | Qué hace falta                 |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------- | ------------------------------ |
+| Probar con un número real                                                | Está prohibido sin vos, y hace falta el trámite de Meta        | Seguir la checklist del piloto |
+| Constancia mínima de consentimiento y baja                               | Es una decisión legal                                          | La revisión legal              |
+| Ver si WhatsApp transcribe las notas de voz                              | Solo se puede ver con un número real                           | Probarlo al conectar           |
+| Que el intento, la racha y las respuestas vayan en una misma transacción | Los repositorios no aceptan transacciones (decisiones 27 y 44) | Una fase siguiente             |
+| Limpiar las altas sin respuesta y los registros viejos                   | Es parte de la programación de tareas                          | Fase 5                         |
 
 ## Qué necesito que revises
 
-1. **Mergear el #2,** para hacer el rebase del #3.
-2. **Probar el simulador en Chrome:** `npm run dev` y abrir <http://localhost:3000/simulador>. Hacé una lección hablando y escuchando.
-3. **Las decisiones 19 a 33** de [decisiones-pendientes.md](decisiones-pendientes.md), en especial la 22, la 23 y la 26.
-4. **Los PR #3 y #4.**
+1. **El PR #5,** para mergearlo.
+2. **El texto del consentimiento** (`content/consentimiento.yaml`), con alguien con formación legal.
+3. **Las decisiones 34 a 52.**
+4. **Los pasos para conectar el número** de la checklist del piloto, cuando avance el trámite de Meta.
 
-Después de esto, la Fase 4 (WhatsApp) espera tu OK. Necesita el trámite de Meta avanzado y saber quién es el titular y quién atiende `AYUDA`.
+Freno acá, como pediste: la Fase 5 (programación y notificaciones) espera tu OK.

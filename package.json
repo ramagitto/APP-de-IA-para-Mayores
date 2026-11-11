@@ -23,13 +23,16 @@
     "db:seed": "tsx scripts/seed.ts",
     "lessons:check": "tsx scripts/check-lessons.ts",
     "lesson:play": "tsx scripts/play-lesson.ts",
-    "evals": "tsx scripts/run-evals.ts"
+    "evals": "tsx scripts/run-evals.ts",
+    "whatsapp:simulate": "tsx scripts/whatsapp-simulate.ts",
+    "support": "tsx scripts/support.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.7.0",
     "drizzle-orm": "^0.45.4",
     "fastify": "^5.12.7",
     "pg": "^8.23.1",
+    "pg-boss": "^12.38.1",
     "yaml": "^2.9.1",
     "zod": "^4.6.7"
   },

@@ -15,6 +15,20 @@
       "when": 1794314747097,
       "tag": "0001_costos_de_ia",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794317616454,
+      "tag": "0002_whatsapp_y_alta",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794317977385,
+      "tag": "0003_entrega_whatsapp",
+      "breakpoints": true
     }
   ]
 }

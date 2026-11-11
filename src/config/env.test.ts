@@ -91,6 +91,41 @@ describe('parseEnv', () => {
     );
   });
 
+  it('WhatsApp está apagado por defecto', () => {
+    expect(parseEnv({ DATABASE_URL: databaseUrl })).toMatchObject({
+      WHATSAPP_PROVIDER: 'disabled',
+      WHATSAPP_GRAPH_VERSION: 'v27.0',
+    });
+  });
+
+  it('WhatsApp exige el secreto y el token de verificación, y en la nube también el acceso', () => {
+    expect(() => parseEnv({ DATABASE_URL: databaseUrl, WHATSAPP_PROVIDER: 'fake' })).toThrow(
+      'WHATSAPP_APP_SECRET, WHATSAPP_VERIFY_TOKEN',
+    );
+    expect(() =>
+      parseEnv({
+        DATABASE_URL: databaseUrl,
+        WHATSAPP_PROVIDER: 'cloud',
+        WHATSAPP_APP_SECRET: 'a',
+        WHATSAPP_VERIFY_TOKEN: 'b',
+      }),
+    ).toThrow('WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID');
+  });
+
+  it('el adaptador falso de WhatsApp no se puede usar en producción', () => {
+    expect(() =>
+      parseEnv({
+        DATABASE_URL: databaseUrl,
+        APP_ENV: 'production',
+        PHONE_ENCRYPTION_KEY: validKey,
+        PHONE_HASH_KEY: validKey,
+        WHATSAPP_PROVIDER: 'fake',
+        WHATSAPP_APP_SECRET: 'a',
+        WHATSAPP_VERIFY_TOKEN: 'b',
+      }),
+    ).toThrow('WHATSAPP_PROVIDER');
+  });
+
   it('rechaza una clave de largo incorrecto', () => {
     expect(() => parseEnv({ DATABASE_URL: databaseUrl, PHONE_HASH_KEY: 'corta' })).toThrow(
       'PHONE_HASH_KEY',
