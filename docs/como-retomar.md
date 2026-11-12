@@ -18,13 +18,13 @@ No escribas código ni mergees nada hasta que te dé el OK.
 
 **Cambio de rumbo (12/11/2026):** el piloto va por la web, con un link personal, y no por WhatsApp Business ([ADR 0011](adr/0011-piloto-web.md)).
 
-| Parte                            | Estado                                                     | Dónde                                      |
-| -------------------------------- | ---------------------------------------------------------- | ------------------------------------------ |
-| 0 a 3                            | Mergeadas                                                  | `main`                                     |
-| 4. WhatsApp, alta, BAJA y AYUDA  | Hecha y guardada para después, apagada                     | `main`, con el piloto web (ver el resumen) |
-| **Piloto web**                   | **Hecho.** Falta publicarlo y probarlo en celulares reales | `main` y [checklist](checklist-piloto.md)  |
-| 5. Programación y notificaciones | En pausa                                                   | —                                          |
-| 6 a 8                            | Pendientes                                                 | [plan-de-fases.md](plan-de-fases.md)       |
+| Parte                            | Estado                                                     | Dónde                                     |
+| -------------------------------- | ---------------------------------------------------------- | ----------------------------------------- |
+| 0 a 3                            | Mergeadas                                                  | `main`                                    |
+| 4. WhatsApp, alta, BAJA y AYUDA  | Hecha y guardada para después, apagada                     | `main` (PR #5, mergeado el 11/11)         |
+| **Piloto web**                   | **Hecho.** Falta publicarlo y probarlo en celulares reales | `main` y [checklist](checklist-piloto.md) |
+| 5. Programación y notificaciones | En pausa                                                   | —                                         |
+| 6 a 8                            | Pendientes                                                 | [plan-de-fases.md](plan-de-fases.md)      |
 
 El detalle de la última sesión está en [resumen-sesion.md](resumen-sesion.md).
 
@@ -97,7 +97,7 @@ npm install
 npm run dev
 ```
 
-Si el PR #5 sigue abierto, `git switch feat/fase-4-whatsapp`. Después, `npm run check` y `npm run test:integration`, con Docker abierto.
+Después, `npm run check` y `npm run test:integration`, con Docker abierto.
 
 ## 8. Cosas que conviene saber
 
