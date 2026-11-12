@@ -5,16 +5,18 @@
 const THEME_COLOR = '#0d4d46';
 const BACKGROUND_COLOR = '#f4f7f6';
 
-function head(extra: string): string {
+// `version` cambia cuando cambia el estilo, el script o el ícono. Va en cada URL para que el
+// navegador no mezcle una página nueva con archivos viejos que tenía guardados.
+function head(extra: string, version: string): string {
   return `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="${THEME_COLOR}">
 <meta name="robots" content="noindex, nofollow">
 <title>Charlá</title>
-<link rel="icon" href="/app/icono.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/app/apple-touch-icon.png">
+<link rel="icon" href="/app/icono.svg?v=${version}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/app/apple-touch-icon.png?v=${version}">
 <link rel="preload" href="/app/atkinson-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/app/charla.css">
+<link rel="stylesheet" href="/app/charla.css?v=${version}">
 ${extra}`;
 }
 
@@ -49,15 +51,18 @@ const icon = (name: string) =>
 
 // El token ya se validó (43 caracteres de base64url): se puede poner en el HTML sin escaparlo.
 // Hay una pantalla por momento del curso; charla.js muestra la que corresponde.
-export function webPage(token: string): string {
+export function webPage(token: string, version: string): string {
   return `<!doctype html>
 <html lang="es-AR">
 <head>
-${head(`<link rel="manifest" href="/p/${token}/manifest.webmanifest">
+${head(
+  `<link rel="manifest" href="/p/${token}/manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Charlá">
-<script src="/app/charla.js" defer></script>`)}
+<script src="/app/charla.js?v=${version}" defer></script>`,
+  version,
+)}
 </head>
 <body>
 ${ICONS}
@@ -191,10 +196,11 @@ ${ICONS}
 `;
 }
 
-export const NOT_FOUND_PAGE = `<!doctype html>
+export function notFoundPage(version: string): string {
+  return `<!doctype html>
 <html lang="es-AR">
 <head>
-${head('')}
+${head('', version)}
 </head>
 <body>
 <main class="screen end">
@@ -206,9 +212,10 @@ ${head('')}
 </body>
 </html>
 `;
+}
 
 // Manifiesto propio de cada persona: así, al dejarlo en la pantalla de inicio, abre su link.
-export function manifestFor(token: string): string {
+export function manifestFor(token: string, version: string): string {
   const start = `/p/${token}`;
 
   return JSON.stringify({
@@ -224,9 +231,14 @@ export function manifestFor(token: string): string {
     background_color: BACKGROUND_COLOR,
     theme_color: THEME_COLOR,
     icons: [
-      { src: '/app/icono-192.png', sizes: '192x192', type: 'image/png' },
-      { src: '/app/icono-512.png', sizes: '512x512', type: 'image/png' },
-      { src: '/app/icono-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      { src: `/app/icono-192.png?v=${version}`, sizes: '192x192', type: 'image/png' },
+      { src: `/app/icono-512.png?v=${version}`, sizes: '512x512', type: 'image/png' },
+      {
+        src: `/app/icono-512.png?v=${version}`,
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
     ],
   });
 }

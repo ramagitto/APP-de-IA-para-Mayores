@@ -98,6 +98,18 @@ describe('página del piloto web', () => {
     expect(response.headers['permissions-policy']).toContain('microphone=(self)');
   });
 
+  it('pide el estilo y el script con su versión, para no mezclarlos con archivos viejos', async () => {
+    const { app } = setup();
+
+    const page = (await app.inject({ method: 'GET', url: `/p/${token}` })).body;
+    const version = /charla\.css\?v=([0-9a-f]{12})/.exec(page)?.[1];
+
+    expect(version).toBeDefined();
+    expect(page).toContain(`/app/charla.js?v=${version}`);
+    const style = await app.inject({ method: 'GET', url: `/app/charla.css?v=${version}` });
+    expect(style.statusCode).toBe(200);
+  });
+
   it('un link inválido muestra una página amable con 404', async () => {
     const { app } = setup();
 

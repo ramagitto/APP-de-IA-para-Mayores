@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
@@ -7,7 +8,7 @@ import { RateLimiter } from '../whatsapp/rate-limiter.js';
 import { appIconPng, APP_ICON_SVG } from './icons.js';
 import type { Participant } from './participants.repository.js';
 import type { WebBackend, WebState } from './web-backend.js';
-import { manifestFor, NOT_FOUND_PAGE, webPage } from './web-page.js';
+import { manifestFor, notFoundPage, webPage } from './web-page.js';
 
 // server: el servidor transcribe. browser: lo reconoce el navegador (solo en local, con la voz
 // simulada). off: sin micrófono, porque en producción no se usa la voz del navegador.
@@ -117,6 +118,10 @@ export function registerWebRoutes(app: FastifyInstance, deps: WebDeps): void {
   const statics = new Map(
     Object.entries(STATIC_FILES).map(([name, file]) => [name, { ...file, body: file.body() }]),
   );
+  // Huella de los archivos de la app: cambia con cada versión publicada.
+  const hash = createHash('sha256');
+  for (const file of statics.values()) hash.update(file.body);
+  const version = hash.digest('hex').slice(0, 12);
 
   async function participantOr404(
     token: string,
@@ -165,9 +170,12 @@ export function registerWebRoutes(app: FastifyInstance, deps: WebDeps): void {
     const participant = await deps.backend.findParticipant(token);
 
     if (!participant) {
-      return privateReply(reply).code(404).type('text/html; charset=utf-8').send(NOT_FOUND_PAGE);
+      return privateReply(reply)
+        .code(404)
+        .type('text/html; charset=utf-8')
+        .send(notFoundPage(version));
     }
-    return privateReply(reply).type('text/html; charset=utf-8').send(webPage(token));
+    return privateReply(reply).type('text/html; charset=utf-8').send(webPage(token, version));
   });
 
   app.get<{ Params: { token: string } }>(
@@ -178,7 +186,7 @@ export function registerWebRoutes(app: FastifyInstance, deps: WebDeps): void {
 
       return privateReply(reply)
         .type('application/manifest+json; charset=utf-8')
-        .send(manifestFor(token));
+        .send(manifestFor(token, version));
     },
   );
 

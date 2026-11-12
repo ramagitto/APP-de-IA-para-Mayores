@@ -16,6 +16,10 @@ De chat a curso ([ADR 0013](docs/adr/0013-rediseno-del-frontend.md)), a partir d
 - Textos del alta para la web (`web-v2-borrador`): nombran los botones reales y no las palabras de WhatsApp.
 - El estado de la web suma el avance del curso, el número de lección y el texto del permiso.
 
+#### Corregido
+
+- Después de publicar una versión nueva, el navegador podía mezclar la página nueva con el estilo y el script viejos que tenía guardados, y la app quedaba trabada en "Abriendo Charlá…". Ahora cada archivo se pide con una versión que cambia con su contenido.
+
 ### Piloto web
 
 Cambio de rumbo: el piloto va por la web, con un link personal, en lugar de WhatsApp Business ([ADR 0011](docs/adr/0011-piloto-web.md)). Hecho en una sesión autónoma; las decisiones tomadas sin el equipo están en `docs/decisiones-pendientes.md` (números 53 a 72).
