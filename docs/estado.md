@@ -35,6 +35,10 @@ Responsables por rol, nunca por nombre, porque el repositorio es público. "Desa
 
 ### 1. Urgente
 
+<<<<<<< HEAD
+=======
+- [ ] **Anular la clave de API de Render** que se usó para publicar, porque pasó por un chat. Se hace en Render, en **Account Settings > API Keys**. El servicio sigue andando sin ella. _Desarrollo._
+>>>>>>> 5cc04256a0766c503469253c660c042c8731e712
 - [ ] **Revisar y mergear el [PR #8](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/8)**, que deja registrado cómo quedó publicada la app. La CI está en verde. _Desarrollo._
 
 ### 2. Antes de dar el primer link
