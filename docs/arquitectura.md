@@ -2,7 +2,7 @@
 
 Charlá es un **monolito modular**: un solo programa, dividido en módulos con responsabilidades claras. Es más simple de desplegar y de entender que varios servicios, y alcanza de sobra para 30 a 100 usuarios.
 
-Este documento describe el diseño objetivo, con los recortes del [ADR 0006](adr/0006-recortes-del-mvp.md). Hoy existen el servidor, la base de datos, el motor de lecciones ([ADR 0007](adr/0007-motor-de-lecciones.md)), las rachas y un tutor simulado. Cada fase agrega su parte.
+Este documento describe el diseño objetivo, con los recortes del [ADR 0006](adr/0006-recortes-del-mvp.md). Al 12/11/2026 existen el servidor, la base de datos, el motor de lecciones ([ADR 0007](adr/0007-motor-de-lecciones.md)), las rachas, el tutor con sus capas de seguridad, la voz, el simulador, el adaptador de WhatsApp (apagado) y la app web del piloto. Faltan la programación de tareas (Fase 5) y el padrino (Fase 6).
 
 ## Diagrama
 
