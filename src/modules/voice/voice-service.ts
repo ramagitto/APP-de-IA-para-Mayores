@@ -37,8 +37,17 @@ export class VoiceService {
     return this.options.stt.name !== 'mock';
   }
 
+  /**
+   * Devuelve el texto, o "" si el proveedor falla (caído, sin crédito o en su tope de gasto).
+   * Con "", Charlá le pide a la persona que lo repita o lo escriba.
+   */
   async transcribe(request: TranscriptionRequest, userId: string | null): Promise<string> {
-    const result = await this.options.stt.transcribe(request);
+    let result;
+    try {
+      result = await this.options.stt.transcribe(request);
+    } catch {
+      return '';
+    }
     await this.record(userId, this.options.stt.name, 'stt', result.costUsd);
 
     return result.text;

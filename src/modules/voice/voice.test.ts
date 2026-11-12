@@ -195,6 +195,21 @@ describe('AzureTextToSpeech', () => {
 });
 
 describe('VoiceService', () => {
+  it('si la transcripción falla, devuelve texto vacío para que Charlá pida repetir o escribir', async () => {
+    const failing: SpeechToText = {
+      name: 'falla',
+      transcribe: async () => {
+        throw new Error('project_spend_limit_exceeded');
+      },
+    };
+    const { voice, ledger } = service(new FixedTts(), 0.01, failing);
+
+    expect(await voice.transcribe({ audio: Buffer.from('x'), mimeType: 'audio/mp4' }, 'u')).toBe(
+      '',
+    );
+    expect(await ledger.spentUsd('u', '2027-05-03')).toBe(0);
+  });
+
   it('genera el audio una sola vez para el mismo texto', async () => {
     const tts = new FixedTts();
     const { voice } = service(tts);
