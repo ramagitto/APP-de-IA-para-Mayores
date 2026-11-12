@@ -20,6 +20,7 @@ export function createTextToSpeech(env: Env): TextToSpeech {
       apiKey: env.AZURE_SPEECH_KEY,
       region: env.AZURE_SPEECH_REGION,
       voice: env.TTS_VOICE,
+      format: env.TTS_AUDIO_FORMAT,
     });
   }
   return new MockTextToSpeech();

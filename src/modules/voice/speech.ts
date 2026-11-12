@@ -32,9 +32,13 @@ export interface TextToSpeech {
   readonly name: string;
   /** Identifica la voz y el formato: dos audios con la misma clave suenan igual. */
   readonly voiceKey: string;
+  /** Tipo de los audios que genera. Si falta, es una nota de voz OGG. */
+  readonly mimeType?: string;
   /** Devuelve null si el proveedor no genera audio, como el simulado. */
   synthesize(text: string): Promise<SynthesizedAudio | null>;
 }
 
 // Nota de voz de WhatsApp: OGG con Opus, mono.
 export const VOICE_NOTE_MIME = 'audio/ogg';
+// MP3 para la web: el iPhone recién reproduce OGG desde iOS 18.4.
+export const MP3_MIME = 'audio/mpeg';

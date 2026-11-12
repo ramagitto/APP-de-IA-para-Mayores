@@ -1,8 +1,13 @@
 import type { SynthesizedAudio, TextToSpeech } from './speech.js';
-import { VOICE_NOTE_MIME } from './speech.js';
+import { MP3_MIME, VOICE_NOTE_MIME } from './speech.js';
 
-// Nota de voz de WhatsApp: OGG con Opus, mono. Es uno de los formatos de salida de Azure.
-const OUTPUT_FORMAT = 'ogg-24khz-16bit-mono-opus';
+// Formatos de salida de Azure: nota de voz de WhatsApp (OGG con Opus, mono) o MP3 para la web.
+const OUTPUT_FORMATS = {
+  ogg: { header: 'ogg-24khz-16bit-mono-opus', mimeType: VOICE_NOTE_MIME },
+  mp3: { header: 'audio-24khz-48kbitrate-mono-mp3', mimeType: MP3_MIME },
+} as const;
+
+export type AudioFormat = keyof typeof OUTPUT_FORMATS;
 
 // USD por millón de caracteres para voces neuronales estándar. Dato de fuentes de terceros,
 // porque la página oficial de precios no se pudo leer: hay que confirmarlo antes del piloto.
@@ -27,6 +32,8 @@ export interface AzureTextToSpeechOptions {
   apiKey: string;
   region: string;
   voice: string;
+  /** Por defecto, OGG. */
+  format?: AudioFormat;
   /** Solo para tests. */
   fetch?: typeof fetch;
 }
@@ -35,10 +42,15 @@ export interface AzureTextToSpeechOptions {
 export class AzureTextToSpeech implements TextToSpeech {
   readonly name = 'azure';
   readonly voiceKey: string;
+  readonly mimeType: string;
+  private readonly outputFormat: string;
   private readonly fetchFn: typeof fetch;
 
   constructor(private readonly options: AzureTextToSpeechOptions) {
-    this.voiceKey = `azure:${options.voice}:${OUTPUT_FORMAT}`;
+    const format = OUTPUT_FORMATS[options.format ?? 'ogg'];
+    this.outputFormat = format.header;
+    this.mimeType = format.mimeType;
+    this.voiceKey = `azure:${options.voice}:${format.header}`;
     this.fetchFn = options.fetch ?? fetch;
   }
 
@@ -50,7 +62,7 @@ export class AzureTextToSpeech implements TextToSpeech {
         headers: {
           'Ocp-Apim-Subscription-Key': this.options.apiKey,
           'Content-Type': 'application/ssml+xml',
-          'X-Microsoft-OutputFormat': OUTPUT_FORMAT,
+          'X-Microsoft-OutputFormat': this.outputFormat,
           'User-Agent': 'charla',
         },
         body: buildSsml(text, this.options.voice),
@@ -62,7 +74,7 @@ export class AzureTextToSpeech implements TextToSpeech {
 
     return {
       audio: Buffer.from(await response.arrayBuffer()),
-      mimeType: VOICE_NOTE_MIME,
+      mimeType: this.mimeType,
       costUsd: (text.length * TTS_PRICE_PER_MILLION_CHARACTERS) / 1_000_000,
     };
   }

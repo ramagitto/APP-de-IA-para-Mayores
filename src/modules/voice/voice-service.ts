@@ -2,7 +2,12 @@ import { toLocalDay } from '../streaks/lesson-calendar.js';
 import { NO_USAGE } from '../tutor/llm-provider.js';
 import type { CostLedger } from '../tutor/cost-ledger.js';
 import { type AudioStore, audioId } from './audio-store.js';
-import type { SpeechToText, TextToSpeech, TranscriptionRequest } from './speech.js';
+import {
+  type SpeechToText,
+  type TextToSpeech,
+  type TranscriptionRequest,
+  VOICE_NOTE_MIME,
+} from './speech.js';
 
 export interface VoiceServiceOptions {
   stt: SpeechToText;
@@ -20,6 +25,16 @@ export class VoiceService {
 
   constructor(private readonly options: VoiceServiceOptions) {
     this.now = options.now ?? (() => new Date());
+  }
+
+  /** Tipo de los audios que genera Charlá, para servirlos con el encabezado correcto. */
+  get audioMimeType(): string {
+    return this.options.tts.mimeType ?? VOICE_NOTE_MIME;
+  }
+
+  /** Si es false, la voz a texto es la simulada: depende de lo que reconoció el navegador. */
+  get transcribesAudio(): boolean {
+    return this.options.stt.name !== 'mock';
   }
 
   async transcribe(request: TranscriptionRequest, userId: string | null): Promise<string> {
