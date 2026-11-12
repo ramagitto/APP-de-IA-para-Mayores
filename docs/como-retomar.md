@@ -1,6 +1,6 @@
 # Cómo retomar el proyecto
 
-Guía para seguir Charlá en un chat nuevo de Claude Code, o desde otra PC. Estado al 10/11/2026.
+Guía para seguir Charlá en un chat nuevo de Claude Code, o desde otra PC. Estado al 12/11/2026.
 
 ## 1. Pegá esto en el chat nuevo
 
@@ -8,7 +8,7 @@ Guía para seguir Charlá en un chat nuevo de Claude Code, o desde otra PC. Esta
 Sigo el proyecto Charlá en un chat nuevo. Antes de hacer nada:
 1. Leé docs/como-retomar.md, CLAUDE.md, docs/plan-de-fases.md y docs/resumen-sesion.md.
 2. Revisá el estado del repo, de los PR abiertos y de la CI con gh.
-3. Decime en pocas líneas dónde estamos, qué está pendiente de mi parte y qué propondrías para la Fase 5.
+3. Decime en pocas líneas dónde estamos y qué está pendiente de mi parte para el piloto web.
 No escribas código ni mergees nada hasta que te dé el OK.
 ```
 
@@ -16,17 +16,17 @@ No escribas código ni mergees nada hasta que te dé el OK.
 
 ## 2. Dónde quedamos
 
-| Fase                             | Estado                                        | Dónde                                                                                            |
-| -------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| 0. Esqueleto                     | Mergeada                                      | `main`                                                                                           |
-| 1. Dominio y contenido           | Mergeada                                      | `main` (#2)                                                                                      |
-| 2. Tutor de IA y líneas de ayuda | Mergeada                                      | `main` (#3)                                                                                      |
-| 3. Simulador y voz               | Mergeada                                      | `main` (#4)                                                                                      |
-| 4. WhatsApp, alta, BAJA y AYUDA  | **En revisión**, CI en verde, sin número real | [PR #5](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/5), rama `feat/fase-4-whatsapp` |
-| 5. Programación y notificaciones | **Sigue esta**, espera el OK                  | —                                                                                                |
-| 6 a 8                            | Pendientes                                    | [plan-de-fases.md](plan-de-fases.md)                                                             |
+**Cambio de rumbo (12/11/2026):** el piloto va por la web, con un link personal, y no por WhatsApp Business ([ADR 0011](adr/0011-piloto-web.md)).
 
-Al cierre había 412 tests unitarios y 40 de integración en verde, y las evals aprobadas.
+| Parte                            | Estado                                                     | Dónde                                      |
+| -------------------------------- | ---------------------------------------------------------- | ------------------------------------------ |
+| 0 a 3                            | Mergeadas                                                  | `main`                                     |
+| 4. WhatsApp, alta, BAJA y AYUDA  | Hecha y guardada para después, apagada                     | `main`, con el piloto web (ver el resumen) |
+| **Piloto web**                   | **Hecho.** Falta publicarlo y probarlo en celulares reales | `main` y [checklist](checklist-piloto.md)  |
+| 5. Programación y notificaciones | En pausa                                                   | —                                          |
+| 6 a 8                            | Pendientes                                                 | [plan-de-fases.md](plan-de-fases.md)       |
+
+El detalle de la última sesión está en [resumen-sesion.md](resumen-sesion.md).
 
 ## 3. Cómo trabajamos (acuerdos con el equipo)
 
@@ -61,27 +61,20 @@ Al cierre había 412 tests unitarios y 40 de integración en verde, y las evals 
 
 ## 5. Lo que está pendiente de la persona responsable
 
-1. **Revisar y mergear el PR #5.**
+1. **Publicar la app** con la [checklist del piloto](checklist-piloto.md), secciones 2 a 4: Neon, Render, claves con tope de gasto y prueba en un Android y un iPhone.
 2. **Hacer revisar textos en borrador:**
-   - las 10 lecciones, por el rol de contenidos;
+   - las 10 lecciones y los recordatorios, por el rol de contenidos;
    - los mensajes de cuidado, por el equipo y una persona con formación en psicología;
-   - el texto del consentimiento, por alguien con formación legal.
-3. **Revisar las decisiones 34 a 52.**
-4. **Avanzar el [trámite de Meta](tramite-meta.md)** y, después, conectar el número con la [checklist del piloto](checklist-piloto.md).
-5. **Cargar claves cuando se decida gastar:** Anthropic (tutor), OpenAI (voz a texto) y Azure (texto a voz). Sin ellas, todo funciona con proveedores simulados.
-6. **Anotar las horas reales** en [horas.md](horas.md): la columna "Real" sigue vacía.
+   - el consentimiento web, por alguien con formación legal.
+3. **Revisar las decisiones 34 a 72** en [decisiones-pendientes.md](decisiones-pendientes.md). Las más importantes del piloto web: 53, 60, 61 y 62.
+4. **Armar la planilla privada** código-persona-teléfono y definir quién atiende AYUDA.
+5. **Anotar las horas reales** en [horas.md](horas.md).
 
-## 6. Lo que sigue: Fase 5
+## 6. Lo que sigue
 
-El detalle está en [plan-de-fases.md](plan-de-fases.md). En resumen:
-
-- **Recordatorio:** a la hora que eligió cada persona, si no escribió, uno solo por día y solo en días de lección. Va como mensaje común si la ventana de 24 horas está abierta, y si no, con la plantilla `charla_recordatorio`.
-- **Repaso del día 30,** con la plantilla `charla_repaso`.
-- **Abandono:** definir cuándo un intento se marca como abandonado.
-- **Viene de la Fase 4:** borrar las altas sin respuesta después de 7 días (`deleteExpiredPendingSignups`) y limpiar los registros viejos de `inbound_events` y `outbound_messages`.
-- **Aceptación:** tests de los trabajos programados con el tiempo simulado, sin mensajes duplicados.
-
-Ya existen: la cola pg-boss (`src/modules/whatsapp/job-queue.ts`), `sendTemplate` en el adaptador de WhatsApp, las plantillas validadas y el calendario de días de lección.
+- Correr el piloto: recordatorios con `npm run pilot -- recordatorios` y métricas con `npm run metrics`.
+- **Pendiente técnico, sin urgencia para el piloto:** limpiar las altas sin respuesta (`deleteExpiredPendingSignups`) y los registros viejos de WhatsApp. Era parte de la Fase 5.
+- **Cuando se retome WhatsApp:** Fase 5 tal como está en el [plan](plan-de-fases.md), el [trámite de Meta](tramite-meta.md) y la sección 7 de la checklist.
 
 ## 7. Preparar la PC
 
@@ -116,13 +109,13 @@ Si el PR #5 sigue abierto, `git switch feat/fase-4-whatsapp`. Después, `npm run
 
 ## 9. Documentos clave
 
-| Documento                                            | Para qué                                                       |
-| ---------------------------------------------------- | -------------------------------------------------------------- |
-| [CLAUDE.md](../CLAUDE.md)                            | Reglas, comandos y decisiones vigentes                         |
-| [plan-de-fases.md](plan-de-fases.md)                 | Qué falta, con criterios de aceptación                         |
-| [resumen-sesion.md](resumen-sesion.md)               | Qué se hizo en la última sesión                                |
-| [decisiones-pendientes.md](decisiones-pendientes.md) | Decisiones tomadas sin el equipo, con cómo revertirlas         |
-| [checklist-piloto.md](checklist-piloto.md)           | Todo lo que falta antes del piloto, incluido conectar WhatsApp |
-| [adr/](adr/)                                         | Decisiones de arquitectura, de la 0001 a la 0010               |
-| [whatsapp-y-costos.md](whatsapp-y-costos.md)         | Tarifas y costo por persona                                    |
-| [horas.md](horas.md)                                 | Horas estimadas y reales                                       |
+| Documento                                            | Para qué                                                                    |
+| ---------------------------------------------------- | --------------------------------------------------------------------------- |
+| [CLAUDE.md](../CLAUDE.md)                            | Reglas, comandos y decisiones vigentes                                      |
+| [plan-de-fases.md](plan-de-fases.md)                 | Qué falta, con criterios de aceptación                                      |
+| [resumen-sesion.md](resumen-sesion.md)               | Qué se hizo en la última sesión                                             |
+| [decisiones-pendientes.md](decisiones-pendientes.md) | Decisiones tomadas sin el equipo, con cómo revertirlas                      |
+| [checklist-piloto.md](checklist-piloto.md)           | Publicar la app, cargar claves, operar el piloto (y WhatsApp, para después) |
+| [adr/](adr/)                                         | Decisiones de arquitectura, de la 0001 a la 0012                            |
+| [whatsapp-y-costos.md](whatsapp-y-costos.md)         | Tarifas y costo por persona                                                 |
+| [horas.md](horas.md)                                 | Horas estimadas y reales                                                    |

@@ -1,6 +1,6 @@
 # Charlá: guía del proyecto
 
-Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios, escalable a 100. El equipo es junior: las decisiones se explican en lenguaje simple porque hay que defenderlas ante la cátedra.
+Curso de IA para personas de 65+, por la web (piloto) y WhatsApp (para después). MVP para un piloto de 30 usuarios, escalable a 100. El equipo es junior: las decisiones se explican en lenguaje simple porque hay que defenderlas ante la cátedra.
 
 ## Cómo trabajamos
 
@@ -22,6 +22,9 @@ Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios
 - `npm run evals`: evals del tutor con el proveedor de `LLM_PROVIDER` (simulado por defecto, gratis).
 - `npm run whatsapp:simulate -- "hola"`: manda al webhook local un mensaje firmado, con `WHATSAPP_PROVIDER=fake`.
 - `npm run support -- listar`: pedidos de AYUDA y avisos de cuidado (también `responder <id> "texto"` y `cerrar <id>`).
+- `npm run pilot -- crear 10`: links del piloto web (también `listar`, `recordatorios`, `nuevo-link <código>` y `baja <código>`).
+- `npm run metrics`: indicadores del piloto y CSV en `var/metricas/`.
+- Contra producción: `CHARLA_ENV_FILE=.env.produccion` antes del comando.
 - Con `npm run dev`, el simulador está en `http://localhost:3000/simulador` (solo con `APP_ENV=local`).
 
 ## Convenciones de código
@@ -58,9 +61,12 @@ Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios
 - **Motor y rachas:** máquina de estados pura y racha sin castigo ([ADR 0007](docs/adr/0007-motor-de-lecciones.md)).
 - **Tutor:** proveedor simulado por defecto; Claude Haiku 5.5 con `LLM_PROVIDER=anthropic`. Tope de USD 0,01 por persona y por día ([ADR 0008](docs/adr/0008-tutor-guardrails-y-evals.md)).
 - **Voz:** proveedores simulados por defecto; `gpt-transcribe` y Azure `es-AR-ElenaNeural` con claves. La intro va siempre en audio; el resto, solo si la persona habló; el cuidado, siempre en texto ([ADR 0009](docs/adr/0009-voz-y-simulador.md)).
-- **Canales:** todo mensaje entra por `MessageRouter` (`src/modules/conversation/`), con este orden: BAJA y AYUDA primero, después el alta y por último la lección. Lo usan el simulador y WhatsApp ([ADR 0010](docs/adr/0010-whatsapp-y-alta.md)).
+- **Canales:** todo mensaje entra por `MessageRouter` (`src/modules/conversation/`), con este orden: BAJA y AYUDA primero, después el alta y por último la lección. Lo usan la web, el simulador y WhatsApp ([ADR 0010](docs/adr/0010-whatsapp-y-alta.md)).
+- **Piloto web:** link personal `/p/<token>`, sin usuario ni contraseña. El sistema no guarda nombres ni teléfonos, solo códigos (P01...). Los recordatorios van a mano por WhatsApp común. El JavaScript del navegador vive en `public/`, sin frameworks ([ADR 0011](docs/adr/0011-piloto-web.md)).
+- **Hosting del piloto:** Render gratis más Neon gratis, con `render.yaml` ([ADR 0012](docs/adr/0012-hosting-gratis-render-y-neon.md)).
+- **Métricas:** `product_events` sin clave foránea, que queda anónima tras la BAJA. Nunca guarda textos.
 - **Nadie se crea en `users` sin un ACEPTO explícito.** Antes, solo existe el hash del contacto en `pending_signups`. Antes de aceptar, el audio no se transcribe.
-- **Las personas se identifican por contacto** (`wa:<BSUID>` o `tel:<teléfono>`, ver `users/contact.ts`), cifrado y con hash.
+- **Las personas se identifican por contacto** (`wa:<BSUID>`, `tel:<teléfono>` o `web:<participante>`, ver `users/contact.ts`), cifrado y con hash.
 - **WhatsApp:** cada mensaje se guarda una vez por su id de Meta, cifrado, y se procesa por la cola de pg-boss. Las respuestas se guardan antes de enviarse y el contenido se borra al procesar o enviar.
 - **El simulador no tiene login:** solo se registra con `APP_ENV=local`.
 - **El audio de la persona nunca se guarda,** y la transcripción tampoco. Solo se guardan los audios que genera Charlá.
@@ -72,7 +78,9 @@ Curso de IA para personas de 65+ por WhatsApp. MVP para un piloto de 30 usuarios
 - **Contenido:** las 10 lecciones, los mensajes de cuidado y el texto del consentimiento siguen en borrador.
 - Decisiones a revisar en [docs/decisiones-pendientes.md](docs/decisiones-pendientes.md); resumen en [docs/resumen-sesion.md](docs/resumen-sesion.md).
 - **Fases 1 a 3:** mergeadas en `main`.
-- **Fase 4:** WhatsApp, alta, BAJA y AYUDA, hecha en una sesión autónoma, en revisión. Falta conectar un número real (pasos en la checklist del piloto).
+- **Fase 4:** WhatsApp, alta, BAJA y AYUDA: hecha y guardada para después, apagada por defecto.
+- **Piloto web:** hecho el 12/11/2026 en una sesión autónoma. Falta publicarlo, cargar las claves y probarlo en un Android y un iPhone ([checklist del piloto](docs/checklist-piloto.md)).
+- **Fase 5:** en pausa por el cambio de rumbo.
 - **Antes del piloto:** [docs/checklist-piloto.md](docs/checklist-piloto.md).
 
 - **Plan de las fases que faltan, con sus criterios:** [docs/plan-de-fases.md](docs/plan-de-fases.md).

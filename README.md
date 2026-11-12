@@ -1,8 +1,8 @@
 # Charlá
 
-Charlá enseña a personas de 65 años o más a usar la inteligencia artificial para resolver cosas del día a día, con lecciones cortas por WhatsApp. No hace falta instalar ninguna app. Es un MVP para un piloto de 30 personas, desarrollado en la materia Dirección de Proyectos Informáticos (Ingeniería en Informática, USAL).
+Charlá enseña a personas de 65 años o más a usar la inteligencia artificial para resolver cosas del día a día, con lecciones cortas desde el celular. No hace falta instalar ninguna app. Es un MVP para un piloto de 30 personas, desarrollado en la materia Dirección de Proyectos Informáticos (Ingeniería en Informática, USAL).
 
-**Estado:** Fase 4, en revisión. Charlá ya funciona por WhatsApp de punta a punta (alta con consentimiento, lecciones, voz, AYUDA y BAJA), probado con mensajes simulados: falta conectar un número real. También se puede usar desde un simulador web. Por defecto usa proveedores de IA y de voz simulados, que no gastan plata.
+**Estado:** el piloto va **por la web**, con un link personal para cada persona ([ADR 0011](docs/adr/0011-piloto-web.md)). Está listo para publicarse gratis siguiendo la [checklist del piloto](docs/checklist-piloto.md). El canal de WhatsApp quedó hecho y apagado, para después. Por defecto usa proveedores de IA y de voz simulados, que no gastan plata.
 
 ## Levantar el proyecto
 
@@ -20,6 +20,25 @@ npm run dev
 ```
 
 Si responde `503`, el servidor anda pero no llega a la base: revisá que Docker esté abierto.
+
+## Probar la app del piloto web
+
+Con `npm run dev` corriendo, en otra terminal:
+
+```bash
+npm run pilot -- crear 1
+```
+
+Abrí el link que muestra (`http://localhost:3000/p/...`). Para verla como en un celular, en Chrome apretá F12 y elegí la vista de dispositivo. En local, el micrófono usa el reconocimiento del navegador; en producción, solo el de OpenAI.
+
+Los recordatorios del día y las métricas:
+
+```bash
+npm run pilot -- recordatorios
+npm run metrics
+```
+
+Para publicarla, seguí la [checklist del piloto](docs/checklist-piloto.md).
 
 ## Probar en el simulador
 
@@ -71,24 +90,27 @@ Para la voz real, usá `STT_PROVIDER=openai` con `OPENAI_API_KEY`, y `TTS_PROVID
 
 ## Comandos
 
-| Comando                               | Qué hace                                                                             |
-| ------------------------------------- | ------------------------------------------------------------------------------------ |
-| `npm run dev`                         | Levanta todo el entorno local y reinicia al guardar                                  |
-| `npm test`                            | Corre los tests unitarios                                                            |
-| `npm run test:integration`            | Corre los tests contra Postgres (necesita la base local)                             |
-| `npm run check`                       | Corre formato, lint, tipos, tests unitarios y build                                  |
-| `npm run lessons:check`               | Valida las lecciones y los feriados                                                  |
-| `npm run lesson:play`                 | Recorre una lección por consola                                                      |
-| `npm run evals`                       | Corre las 43 evals del tutor y mide su costo                                         |
-| `npm run whatsapp:simulate -- "hola"` | Manda al webhook local un mensaje de WhatsApp firmado (con `WHATSAPP_PROVIDER=fake`) |
-| `npm run support -- listar`           | Lista los pedidos de AYUDA (también `responder` y `cerrar`)                          |
-| `npm run db:generate`                 | Crea una migración a partir de los cambios en el esquema                             |
-| `npm run db:migrate`                  | Aplica las migraciones pendientes                                                    |
-| `npm run db:seed`                     | Carga datos de prueba, con teléfonos inventados                                      |
-| `npm run format`                      | Corrige el formato del código                                                        |
-| `npm run build`                       | Compila a `dist/`                                                                    |
-| `npm start`                           | Arranca la versión compilada                                                         |
-| `docker compose down`                 | Apaga Postgres (agregá `-v` para borrar sus datos)                                   |
+| Comando                               | Qué hace                                                                                                         |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                         | Levanta todo el entorno local y reinicia al guardar                                                              |
+| `npm test`                            | Corre los tests unitarios                                                                                        |
+| `npm run test:integration`            | Corre los tests contra Postgres (necesita la base local)                                                         |
+| `npm run check`                       | Corre formato, lint, tipos, tests unitarios y build                                                              |
+| `npm run lessons:check`               | Valida las lecciones y los feriados                                                                              |
+| `npm run lesson:play`                 | Recorre una lección por consola                                                                                  |
+| `npm run evals`                       | Corre las 43 evals del tutor y mide su costo                                                                     |
+| `npm run whatsapp:simulate -- "hola"` | Manda al webhook local un mensaje de WhatsApp firmado (con `WHATSAPP_PROVIDER=fake`)                             |
+| `npm run support -- listar`           | Lista los pedidos de AYUDA (también `responder` y `cerrar`)                                                      |
+| `npm run pilot -- crear 10`           | Crea participantes del piloto web y muestra sus links (también `listar`, `recordatorios`, `nuevo-link` y `baja`) |
+| `npm run metrics`                     | Indicadores del piloto y CSV sin identificadores en `var/metricas/`                                              |
+| `npm run db:generate`                 | Crea una migración a partir de los cambios en el esquema                                                         |
+| `npm run db:migrate`                  | Aplica las migraciones pendientes                                                                                |
+| `npm run db:seed`                     | Carga datos de prueba, con teléfonos inventados                                                                  |
+| `npm run format`                      | Corrige el formato del código                                                                                    |
+| `npm run build`                       | Compila a `dist/`                                                                                                |
+| `npm start`                           | Arranca la versión compilada                                                                                     |
+| `npm run start:production`            | Aplica las migraciones y arranca (lo usa Render)                                                                 |
+| `docker compose down`                 | Apaga Postgres (agregá `-v` para borrar sus datos)                                                               |
 
 ## Estructura
 
@@ -99,7 +121,8 @@ src/
   config/           Lectura y validación de variables de entorno
   modules/          Un módulo por tema del producto
   shared/           Lo que usan varios módulos, como la base de datos
-content/            Lecciones en YAML y feriados, editables sin programar
+content/            Lecciones, textos del alta y recordatorios en YAML, editables sin programar
+public/             Script y estilos de la app web del piloto
 drizzle/            Migraciones de la base de datos
 scripts/            Scripts de desarrollo
 test/               Datos y preparación compartidos por los tests

@@ -4,6 +4,31 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ## [Sin publicar]
 
+### Piloto web
+
+Cambio de rumbo: el piloto va por la web, con un link personal, en lugar de WhatsApp Business ([ADR 0011](docs/adr/0011-piloto-web.md)). Hecho en una sesión autónoma; las decisiones tomadas sin el equipo están en `docs/decisiones-pendientes.md` (números 53 a 72).
+
+#### Agregado
+
+- App web para celular en `/p/<token>`: letra grande con tres tamaños, alto contraste, botones grandes, botón para hablar, botones para cada paso y menú con ayuda, baja y cómo dejarla en la pantalla de inicio. Funciona como PWA, con un manifiesto por persona.
+- Micrófono para Chrome de Android y Safari de iPhone: graba en WebM/Opus o MP4/AAC, destraba el audio del iPhone con el primer toque y sirve el audio por partes, como lo pide Safari.
+- Link personal con un token de 256 bits, guardado con hash y cifrado. Sin nombres ni teléfonos: cada persona es un código (P01, P02...).
+- Consentimiento web propio (`content/consentimiento-web.yaml`), con BAJA y AYUDA por el mismo `MessageRouter` que WhatsApp.
+- `npm run pilot`: crear links, listar participantes, recordatorios del día listos para copiar, cambiar un link y dar de baja.
+- `npm run metrics`: retención a 14 días, segunda semana, día 30, completitud, autoinicio, racha y costo, en tres CSV sin identificadores.
+- Tabla `product_events`, que queda anónima después de la BAJA, y tabla `web_participants`.
+- Despliegue gratis: `render.yaml` para Render, base en Neon, `npm run start:production` y `/ping`. Pasos en la checklist del piloto.
+- Audio MP3 de Azure para la web (`TTS_AUDIO_FORMAT`), `PUBLIC_BASE_URL` y `CHARLA_ENV_FILE` para correr los comandos contra producción.
+- ADR 0011 y 0012.
+
+#### Cambiado
+
+- `npm run support` muestra el código del participante web y no intenta responderle por WhatsApp.
+- Si falla la transcripción, Charlá pide repetir o escribir, en lugar de dar un error.
+- Una variable de entorno vacía cuenta como no definida.
+- Los logs reemplazan el token del link por `/p/:token`.
+- La Fase 5 queda en pausa; la checklist del piloto pasa a ser la del piloto web, con WhatsApp al final.
+
 ### Fase 4: WhatsApp, alta, BAJA y AYUDA
 
 Hecha en una sesión autónoma. Las decisiones tomadas sin el equipo están en `docs/decisiones-pendientes.md` (números 34 a 52).
