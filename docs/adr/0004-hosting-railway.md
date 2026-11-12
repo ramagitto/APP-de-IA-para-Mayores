@@ -1,6 +1,6 @@
 # ADR 0004: hosting en Railway
 
-**Estado:** aceptado como punto de partida, 30/10/2026. Precios a confirmar en el despliegue de la Fase 8. El [ADR 0006](0006-recortes-del-mvp.md) saca el entorno de staging.
+**Estado:** aceptado como punto de partida, 30/10/2026. Precios a confirmar en el despliegue de la Fase 8. El [ADR 0006](0006-recortes-del-mvp.md) saca el entorno de staging. **Para el piloto web lo reemplaza el [ADR 0012](0012-hosting-gratis-render-y-neon.md)** (12/11/2026); sigue siendo una opción para WhatsApp, que necesita un servidor siempre encendido.
 
 ## Contexto
 
