@@ -1,0 +1,52 @@
+# Blueprint de Render para el piloto web (ADR 0012). Los pasos están en docs/checklist-piloto.md.
+#
+# Plan gratuito: el servidor se duerme a los 15 minutos sin uso y tarda cerca de un minuto en
+# despertar. La base de datos va aparte, en Neon (también gratis).
+#
+# Los secretos no van acá: los que tienen "sync: false" Render los pide al crear el servicio.
+# Las claves de IA se agregan después, desde el panel, cuando se decida gastar.
+services:
+  - type: web
+    name: charla
+    runtime: node
+    plan: free
+    # La región más cercana a la Argentina entre las de Render. La base de Neon, en la misma zona.
+    region: virginia
+    # Hace falta instalar también las dependencias de desarrollo: TypeScript compila el build.
+    buildCommand: npm ci --include=dev && npm run build
+    # Aplica las migraciones y arranca. En el plan gratis no hay paso previo al despliegue.
+    startCommand: npm run start:production
+    # /ping no toca la base: así la base gratuita de Neon se puede dormir.
+    healthCheckPath: /ping
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      # Conexión a Neon, con ?sslmode=require. Es un secreto.
+      - key: DATABASE_URL
+        sync: false
+      # 32 bytes en base64 cada una, distintas. Guardalas también en un lugar seguro: sin la de
+      # cifrado no se pueden recuperar los links.
+      - key: PHONE_ENCRYPTION_KEY
+        sync: false
+      - key: PHONE_HASH_KEY
+        sync: false
+      # Por ejemplo https://charla.onrender.com, sin barra al final.
+      - key: PUBLIC_BASE_URL
+        sync: false
+      # Proveedores simulados hasta cargar las claves (ver la checklist).
+      - key: LLM_PROVIDER
+        value: mock
+      - key: STT_PROVIDER
+        value: mock
+      - key: TTS_PROVIDER
+        value: mock
+      # MP3: suena en todos los iPhone. OGG recién desde iOS 18.4.
+      - key: TTS_AUDIO_FORMAT
+        value: mp3
+      # Tope de gasto en IA por persona y por día, en dólares.
+      - key: TUTOR_DAILY_BUDGET_USD
+        value: '0.01'
+      - key: WHATSAPP_PROVIDER
+        value: disabled
