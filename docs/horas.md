@@ -25,7 +25,10 @@ Punto de partida: unas 197 horas disponibles entre el 2/11/2026 y el 31/3/2027, 
 | 6. Padrino                | 12 h      | 14 h       | 5/3/2027     |      |        |          |
 | 7. Métricas               | 8 h       | 10 h       | 12/3/2027    |      |        |          |
 | 8. Preparación del piloto | 23 h      | 28 h       | 31/3/2027    |      |        |          |
-| **Total**                 | **160 h** | **193 h**  |              |      |        |          |
+| Piloto web (nuevo)        | 36 h      | 43 h       | —            |      |        |          |
+| **Total**                 | **196 h** | **236 h**  |              |      |        |          |
+
+**Ojo con el total:** el piloto web suma 36 h al plan, que ya era justo. Si se descuentan la Fase 5, en pausa (14 h), y la Fase 7, que quedó en buena parte hecha (8 h), el total baja a unas 174 h, dentro de las 197 disponibles. Hay que confirmarlo antes de la Fase 6.
 
 **Desvío** = (real − estimado) ÷ estimado. Por ejemplo, 30 h reales contra 24 h estimadas son +25%.
 
@@ -72,6 +75,22 @@ También la hizo Claude en una sesión autónoma. Lo que te toca a vos es conect
 | Plantillas, pasos para conectar el número y documentación | 6 h      |
 | **Total**                                                 | **35 h** |
 | Conectar el número real y probarlo (estimado)             | 3 a 5 h  |
+
+## Detalle estimado del piloto web
+
+También lo hizo Claude en una sesión autónoma. Lo que te toca a vos es publicar la app, cargar las claves, probar en dos celulares y revisar el PR.
+
+| Tarea                                                                 | Estimado |
+| --------------------------------------------------------------------- | -------- |
+| Participantes, tokens y rutas web                                     | 6 h      |
+| App para celular: accesibilidad, micrófono, audio y PWA               | 10 h     |
+| Consentimiento web y estado de la lección                             | 2 h      |
+| Comandos de links, estado, baja y recordatorios                       | 4 h      |
+| Eventos, métricas y CSV                                               | 6 h      |
+| Despliegue gratis y checklist                                         | 4 h      |
+| Tests, prueba en navegador y documentación                            | 4 h      |
+| **Total**                                                             | **36 h** |
+| Publicar, cargar claves y probar en un Android y un iPhone (estimado) | 3 a 5 h  |
 
 ## Cuándo reaccionar
 

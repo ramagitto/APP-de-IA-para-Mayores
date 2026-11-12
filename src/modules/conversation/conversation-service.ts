@@ -12,6 +12,7 @@ import {
 } from '../lessons/lesson-attempts.repository.js';
 import { handleUserMessage } from '../lessons/lesson-flow.js';
 import type { Lesson } from '../lessons/lesson.schema.js';
+import { type EventRecorder, NO_EVENTS } from '../metrics/product-events.js';
 import { nextLesson } from '../lessons/progress.js';
 import type { Tutor } from '../lessons/tutor.js';
 import { careResponseFor } from '../safety/safety-messages.js';
@@ -56,7 +57,21 @@ export interface ConversationDeps {
   calendar: LessonCalendar;
   tutor: Tutor;
   voice: VoiceService;
+  events?: EventRecorder;
 }
+
+// Dónde está la persona hoy. La web lo usa al abrirse, para mostrar el botón que corresponde.
+export type LessonStatus =
+  | {
+      kind: 'in_lesson';
+      step: 'practice' | 'challenge';
+      lessonTitle: string;
+      /** La última consigna, por si la persona abre la web en otro celular. */
+      prompt: string;
+    }
+  | { kind: 'ready'; lessonTitle: string; lessonNumber: number }
+  | { kind: 'done_today' }
+  | { kind: 'all_done' };
 
 interface TurnOutcome {
   messages: OutgoingMessage[];
@@ -67,7 +82,47 @@ interface TurnOutcome {
 // Atiende el mensaje de una persona ya registrada, venga del canal que venga. El alta, las
 // palabras BAJA y AYUDA y la transcripción las resuelve antes MessageRouter.
 export class ConversationService {
-  constructor(private readonly deps: ConversationDeps) {}
+  private readonly events: EventRecorder;
+
+  constructor(private readonly deps: ConversationDeps) {
+    this.events = deps.events ?? NO_EVENTS;
+  }
+
+  async status(userId: string, now: Date): Promise<{ lesson: LessonStatus; streak: number }> {
+    const { orm, lessons, calendar } = this.deps;
+    const streak = await getStreak(orm, userId);
+    const shownStreak = currentStreak(streak, now, calendar);
+    const stored = await findOpenAttempt(orm, userId);
+    const open = stored && lessons.find((candidate) => candidate.id === stored.attempt.lessonId);
+
+    if (stored && open) {
+      const practice = stored.attempt.state === 'awaiting_practice';
+      return {
+        streak: shownStreak,
+        lesson: {
+          kind: 'in_lesson',
+          step: practice ? 'practice' : 'challenge',
+          lessonTitle: open.title,
+          prompt: practice
+            ? open.introScript
+            : `${open.challengeText} ${open.challengeSafetyReminder}`,
+        },
+      };
+    }
+
+    if (!canStartLesson(streak, now, calendar)) {
+      return { streak: shownStreak, lesson: { kind: 'done_today' } };
+    }
+
+    const completed = await listCompletedLessonIds(orm, userId);
+    const next = nextLesson(lessons, completed);
+    if (!next) return { streak: shownStreak, lesson: { kind: 'all_done' } };
+
+    return {
+      streak: shownStreak,
+      lesson: { kind: 'ready', lessonTitle: next.title, lessonNumber: completed.length + 1 },
+    };
+  }
 
   async handle(incoming: LessonMessage): Promise<ConversationReply> {
     const { orm, calendar } = this.deps;
@@ -118,6 +173,14 @@ export class ConversationService {
 
       if (turn.attempt !== stored.attempt) await updateAttempt(orm, stored.id, turn.attempt);
       if (turn.streak !== streak) await saveStreak(orm, userId, turn.streak, now);
+      if (turn.attempt.state === 'completed' && stored.attempt.state !== 'completed') {
+        await this.events.record({
+          subjectId: userId,
+          type: 'lesson_completed',
+          lessonId: lesson.id,
+          occurredAt: now,
+        });
+      }
 
       return turn;
     }
@@ -137,6 +200,13 @@ export class ConversationService {
     // Cualquier mensaje en un día de lección la dispara: la ventana de 24 horas la abre la persona.
     const started = startAttempt({ lesson: next, trigger: 'user_message', now });
     await insertAttempt(orm, userId, started.attempt);
+    await this.events.record({
+      subjectId: userId,
+      type: 'lesson_started',
+      lessonId: next.id,
+      trigger: started.attempt.trigger,
+      occurredAt: now,
+    });
 
     return { ...started, streak };
   }

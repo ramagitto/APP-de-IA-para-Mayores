@@ -24,6 +24,8 @@ export const MAX_TEXT_LENGTH = 4096;
 // Con el id de WhatsApp se responde por "recipient"; con un teléfono, por "to".
 export function addressOf(contact: ContactId): { to: string } | { recipient: string } {
   const { kind, value } = parseContact(contact);
+  // Una persona de la web no tiene WhatsApp registrado: no se le puede escribir por acá.
+  if (kind === 'web') throw new Error('Ese contacto es de la web, no de WhatsApp');
   return kind === 'whatsapp' ? { recipient: value } : { to: value };
 }
 

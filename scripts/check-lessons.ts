@@ -4,9 +4,11 @@ import { readFileSync } from 'node:fs';
 import { readLessonSources, validateLessons } from '../src/modules/lessons/lesson.loader.js';
 import {
   CONSENT_FILE,
+  WEB_CONSENT_FILE,
   type ConsentContent,
   parseConsentContent,
 } from '../src/modules/onboarding/consent-content.js';
+import { parseReminderTexts, REMINDERS_FILE } from '../src/modules/web/reminders.js';
 import {
   HELPLINES_FILE,
   type Helplines,
@@ -39,11 +41,19 @@ try {
   errors.push(`${TEMPLATES_FILE}: ${(error as Error).message}`);
 }
 
-let consent: ConsentContent | undefined;
 try {
-  consent = parseConsentContent(readFileSync(CONSENT_FILE, 'utf8'));
+  parseReminderTexts(readFileSync(REMINDERS_FILE, 'utf8'));
 } catch (error) {
-  errors.push(`${CONSENT_FILE}: ${(error as Error).message}`);
+  errors.push(`${REMINDERS_FILE}: ${(error as Error).message}`);
+}
+
+const consents: ConsentContent[] = [];
+for (const file of [CONSENT_FILE, WEB_CONSENT_FILE]) {
+  try {
+    consents.push(parseConsentContent(readFileSync(file, 'utf8')));
+  } catch (error) {
+    errors.push(`${file}: ${(error as Error).message}`);
+  }
 }
 
 if (errors.length > 0) {
@@ -68,7 +78,7 @@ if (CARE_MESSAGES_REVIEW === 'borrador') {
   console.warn('Aviso: los mensajes de cuidado siguen en borrador. Se revisan antes del piloto.');
 }
 
-if (consent?.revision === 'borrador') {
+if (consents.some((consent) => consent.revision === 'borrador')) {
   console.warn(
     'Aviso: los textos del alta siguen en borrador. Los revisa alguien con formación legal.',
   );

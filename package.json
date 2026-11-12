@@ -2,7 +2,7 @@
   "name": "charla",
   "version": "0.1.0",
   "private": true,
-  "description": "Charlá: alfabetización en inteligencia artificial para personas mayores vía WhatsApp.",
+  "description": "Charlá: alfabetización en inteligencia artificial para personas mayores, por la web y WhatsApp.",
   "type": "module",
   "engines": {
     "node": ">=24"
@@ -11,6 +11,7 @@
     "dev": "node scripts/dev.mjs",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
+    "start:production": "node dist/shared/db/migrate.js && node dist/server.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -25,7 +26,9 @@
     "lesson:play": "tsx scripts/play-lesson.ts",
     "evals": "tsx scripts/run-evals.ts",
     "whatsapp:simulate": "tsx scripts/whatsapp-simulate.ts",
-    "support": "tsx scripts/support.ts"
+    "support": "tsx scripts/support.ts",
+    "pilot": "tsx scripts/pilot.ts",
+    "metrics": "tsx scripts/metrics.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.7.0",

@@ -39,14 +39,45 @@ Charlá enseña a personas de 65 años o más a usar la IA para resolver cosas d
 
 ## Estado de las fases
 
-| Fase                   | Estado                                                                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| 0. Esqueleto           | Terminada                                                                                                                 |
-| 1. Dominio y contenido | En revisión: [PR #2](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/2). Faltan el OK y la revisión de lecciones |
-| 2. Tutor de IA         | En revisión: hecha en sesión autónoma, sale de la rama de la Fase 1. Ver `docs/resumen-sesion.md`                         |
-| 3. Simulador y voz     | En revisión: hecha en sesión autónoma, sale de la rama de la Fase 2. Ver `docs/resumen-sesion.md`                         |
-| 4. WhatsApp            | En revisión: hecha en sesión autónoma, sin número real. Ver `docs/resumen-sesion.md`                                      |
-| 5 a 8                  | Pendientes                                                                                                                |
+| Fase            | Estado                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| 0. Esqueleto    | Terminada                                                                                               |
+| 1 a 3           | Mergeadas en `main`                                                                                     |
+| 4. WhatsApp     | Hecha y guardada para después: entra a `main` con el piloto web, apagada (`WHATSAPP_PROVIDER=disabled`) |
+| **Piloto web**  | **Hecho** el 12/11/2026, en sesión autónoma. Ver abajo y `docs/resumen-sesion.md`                       |
+| 5. Programación | **En pausa:** los recordatorios los manda el equipo a mano. La limpieza programada queda pendiente      |
+| 6 a 8           | Pendientes. La 7 (métricas) quedó en buena parte hecha con el piloto web                                |
+
+**Cambio de rumbo (12/11/2026):** el piloto no va a ser por WhatsApp Business sino por la web, con un link personal ([ADR 0011](adr/0011-piloto-web.md)). Lo que sigue de este documento se escribió para WhatsApp: vale para cuando se retome.
+
+## Piloto web (36 h)
+
+**Objetivo:** un piloto que se pueda usar ya con 10 a 30 personas mayores, sin Meta y sin costo fijo.
+
+| Tarea                                                                          | Estimado |
+| ------------------------------------------------------------------------------ | -------- |
+| Participantes, tokens y rutas web con encabezados de seguridad                 | 6 h      |
+| App para celular: accesibilidad, micrófono en Android y iPhone, audio, PWA     | 10 h     |
+| Consentimiento web y estado de la lección en el servicio de conversación       | 2 h      |
+| Comandos: links, estado, baja y recordatorios del día                          | 4 h      |
+| Eventos de producto, métricas y CSV                                            | 6 h      |
+| Despliegue gratis (Render y Neon), `/ping`, migraciones al arrancar, checklist | 4 h      |
+| Tests, prueba en Chrome con vista de celular, ADR y documentación              | 4 h      |
+| **Total**                                                                      | **36 h** |
+
+**Criterios de aceptación:**
+
+1. `npm run pilot -- crear 3` muestra 3 links que abren la app. Un link inválido o dado de baja muestra "Este link no funciona".
+2. Consentimiento primero: nadie existe en `users` hasta tocar ACEPTO.
+3. Se puede hacer una lección completa con botones, texto y voz.
+4. AYUDA aparece en `npm run support -- listar` con el código del participante. BAJA borra los datos y el link deja de funcionar.
+5. `npm run pilot -- recordatorios` arma un texto por persona con su link, y no incluye a quien ya hizo la lección ni a quien se dio de baja.
+6. `npm run metrics` genera CSV sin identificadores, y los indicadores están probados con datos armados a mano.
+7. Ni el token ni los textos aparecen en los logs.
+8. `npm run check`, los tests de integración y la CI en verde.
+9. Funciona en Chrome de Android y en Safari de iPhone, con micrófono. **Probado solo en Chrome con vista de celular y micrófono simulado: falta la prueba en celulares reales** (sección 3 de la [checklist](checklist-piloto.md)).
+
+**Riesgos:** que algún modelo de iPhone no reproduzca el audio sin un toque (mitigado: botón "Escuchar" siempre visible); el minuto de espera del servidor gratuito; que el equipo no sostenga los recordatorios manuales.
 
 ## Fase 2: tutor de IA (25 h)
 

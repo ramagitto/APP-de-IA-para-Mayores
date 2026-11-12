@@ -8,7 +8,10 @@ Este documento describe el diseño objetivo, con los recortes del [ADR 0006](adr
 
 ```mermaid
 flowchart LR
-  U[Persona mayor] <--> WA[WhatsApp Cloud API]
+  U[Persona mayor] <--> WEB[App web con link personal]
+  WEB <--> AWEB[Adaptador web]
+  AWEB --> CORE
+  U <--> WA[WhatsApp Cloud API]
   WA <--> AW[Adaptador WhatsApp]
   DEV[Simulador web] <--> AS[Adaptador simulador]
   AW --> Q[(Cola pg-boss)]
@@ -26,7 +29,7 @@ flowchart LR
 
 ## Ideas principales
 
-- **Los canales son adaptadores.** El núcleo recibe y devuelve mensajes genéricos, sin saber si vienen de WhatsApp o del simulador. Por eso se puede hacer una demo sin depender de Meta, y existe un plan B si Meta cambia sus reglas.
+- **Los canales son adaptadores.** El núcleo recibe y devuelve mensajes genéricos, sin saber si vienen de la web, de WhatsApp o del simulador. El piloto usa la web ([ADR 0011](adr/0011-piloto-web.md)), que responde en el momento, sin cola. Por eso se puede hacer una demo sin depender de Meta, y existe un plan B si Meta cambia sus reglas.
 - **El webhook responde enseguida.** Guarda el evento, contesta y deja el trabajo en la cola, porque transcribir audio y generar voz tarda varios segundos.
 - **Los proveedores de IA son intercambiables.** El tutor usa interfaces propias, no el SDK de un proveedor directamente.
 - **Las lecciones son datos.** Viven en archivos YAML versionados, para que el equipo de contenidos las edite sin programar.
@@ -55,7 +58,8 @@ Más detalle en el [ADR 0005](adr/0005-whatsapp-inicio-por-usuario-y-curso-cerra
 | `support_requests`   | Pedidos de AYUDA y avisos de cuidado para una persona del equipo                      | Fase 4     |
 | `sponsors`           | Padrinos                                                                              | Fase 6     |
 | `sponsor_links`      | Vínculo padrino-mayor, con el consentimiento del mayor                                | Fase 6     |
-| `product_events`     | Alta, lección iniciada o completada, abandono, baja                                   | Fase 7     |
+| `product_events`     | Alta, apertura, lección iniciada o completada, ayuda, cuidado y baja. Sin textos      | Piloto web |
+| `web_participants`   | Código del participante y su token (hash y cifrado). Sin nombres ni teléfonos         | Piloto web |
 | `survey_responses`   | Encuesta de satisfacción al final de cada nivel                                       | Fase 7     |
 
 Las lecciones no van en la base: `lesson_attempts` guarda el identificador y la versión del archivo YAML. Las tablas de fases futuras son un plan y pueden cambiar al implementarlas.

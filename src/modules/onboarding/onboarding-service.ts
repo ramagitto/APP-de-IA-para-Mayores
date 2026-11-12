@@ -1,8 +1,9 @@
 import { eq, lt } from 'drizzle-orm';
 import type { Orm } from '../../shared/db/database.js';
 import { pendingSignups } from '../../shared/db/schema.js';
-import { recordConsent } from '../consent/consent.repository.js';
+import { type ConsentType, recordConsent } from '../consent/consent.repository.js';
 import type { OutgoingMessage } from '../lessons/lesson-attempt.js';
+import { type EventRecorder, NO_EVENTS } from '../metrics/product-events.js';
 import { type ContactId, hashContact } from '../users/contact.js';
 import type { PhoneKeys } from '../users/phone.js';
 import { createUser } from '../users/users.repository.js';
@@ -14,10 +15,17 @@ export const MAX_CONSENT_PROMPTS = 3;
 // Un alta sin respuesta se borra a los 7 días (la Fase 5 programa la limpieza).
 export const PENDING_SIGNUP_DAYS = 7;
 
+// En WhatsApp, la persona acepta también recibir mensajes por ese canal. En la web, solo los términos.
+export const WHATSAPP_CONSENTS: ConsentType[] = ['terms_and_privacy', 'whatsapp_opt_in'];
+export const WEB_CONSENTS: ConsentType[] = ['terms_and_privacy'];
+
 export interface OnboardingDeps {
   orm: Orm;
   keys: PhoneKeys;
   consent: ConsentContent;
+  /** Qué se registra al aceptar. Por defecto, lo de WhatsApp. */
+  consentTypes?: ConsentType[];
+  events?: EventRecorder;
 }
 
 export interface OnboardingResult {
@@ -51,7 +59,7 @@ export class OnboardingService {
 
     if (keyword === 'acepto') {
       const user = await createUser(orm, keys, { contact: input.contact });
-      for (const type of ['terms_and_privacy', 'whatsapp_opt_in'] as const) {
+      for (const type of this.deps.consentTypes ?? WHATSAPP_CONSENTS) {
         await recordConsent(orm, {
           userId: user.id,
           type,
@@ -60,6 +68,11 @@ export class OnboardingService {
         });
       }
       await this.cancel(input.contact);
+      await (this.deps.events ?? NO_EVENTS).record({
+        subjectId: user.id,
+        type: 'signup',
+        occurredAt: input.now,
+      });
 
       return { messages: [info(consent.bienvenida)], userId: user.id };
     }

@@ -174,6 +174,20 @@ describe('AzureTextToSpeech', () => {
     expect(result.mimeType).toBe('audio/ogg');
   });
 
+  it('para la web pide MP3, que también suena en iPhone viejos, con otra clave de caché', async () => {
+    const { fetchFn, calls } = fakeFetch(new Response(Buffer.from('mp3')));
+    const options = { apiKey: 'clave', region: 'eastus', voice: 'es-AR-ElenaNeural' };
+    const tts = new AzureTextToSpeech({ ...options, format: 'mp3', fetch: fetchFn });
+
+    const result = await tts.synthesize('Hola');
+
+    expect(calls[0]?.init.headers).toMatchObject({
+      'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+    });
+    expect(result.mimeType).toBe('audio/mpeg');
+    expect(tts.voiceKey).not.toBe(new AzureTextToSpeech(options).voiceKey);
+  });
+
   it('escapa el texto para que no rompa el XML', () => {
     expect(escapeXml(`<a & 'b'>`)).toBe('&lt;a &amp; &apos;b&apos;&gt;');
     expect(buildSsml('a < b', 'es-AR-TomasNeural')).toContain("xml:lang='es-AR'");
@@ -181,6 +195,21 @@ describe('AzureTextToSpeech', () => {
 });
 
 describe('VoiceService', () => {
+  it('si la transcripción falla, devuelve texto vacío para que Charlá pida repetir o escribir', async () => {
+    const failing: SpeechToText = {
+      name: 'falla',
+      transcribe: async () => {
+        throw new Error('project_spend_limit_exceeded');
+      },
+    };
+    const { voice, ledger } = service(new FixedTts(), 0.01, failing);
+
+    expect(await voice.transcribe({ audio: Buffer.from('x'), mimeType: 'audio/mp4' }, 'u')).toBe(
+      '',
+    );
+    expect(await ledger.spentUsd('u', '2027-05-03')).toBe(0);
+  });
+
   it('genera el audio una sola vez para el mismo texto', async () => {
     const tts = new FixedTts();
     const { voice } = service(tts);

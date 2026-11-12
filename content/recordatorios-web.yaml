@@ -1,0 +1,21 @@
+# Textos que el equipo copia y manda a mano por WhatsApp común, uno por persona.
+# Los genera `npm run pilot -- recordatorios`. Los edita el rol de contenidos.
+#
+# Marcadores que se reemplazan solos:
+#   {link}   el link personal (obligatorio en todos los textos)
+#   {numero} el número de la lección
+#   {titulo} el título de la lección
+#
+# Cortos y cálidos: no insistir de más. No se manda nada a quien ya hizo la lección del día.
+revision: borrador
+
+invitacion: >-
+  ¡Hola! Te comparto Charlá, un curso cortito para aprender a usar la inteligencia artificial en
+  el día a día. Entrá desde este link, que es solo tuyo: {link}
+
+leccion_del_dia: >-
+  ¡Hola! Hoy te espera la lección {numero} de Charlá: "{titulo}". Son unos 3 minutos. Entrá acá:
+  {link}
+
+leccion_sin_terminar: >-
+  ¡Hola! Te quedó por terminar la lección de Charlá "{titulo}". Seguimos cuando quieras: {link}
