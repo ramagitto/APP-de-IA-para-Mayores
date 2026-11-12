@@ -3,6 +3,7 @@ import { buildServices } from './composition.js';
 import { loadEnv } from './config/env.js';
 import { createWhatsAppApi, createWhatsAppProcessor } from './modules/whatsapp/create-whatsapp.js';
 import { PgBossQueue } from './modules/whatsapp/job-queue.js';
+import { createWebBackend } from './modules/web/web-backend.js';
 import { registerWhatsAppWebhook } from './modules/whatsapp/webhook.routes.js';
 import { createDatabase, createOrm, pingDatabase } from './shared/db/database.js';
 
@@ -18,6 +19,21 @@ const app = buildApp({
     env.APP_ENV === 'local'
       ? { router: services.router, audioStore: services.audioStore }
       : undefined,
+  web: {
+    backend: createWebBackend({
+      orm: services.orm,
+      keys: services.keys,
+      router: services.webRouter,
+    }),
+    audioStore: services.audioStore,
+    audioMimeType: services.voice.audioMimeType,
+    // En producción no se usa el reconocimiento del navegador: puede mandar la voz a terceros.
+    voiceInput: services.voice.transcribesAudio
+      ? 'server'
+      : env.APP_ENV === 'local'
+        ? 'browser'
+        : 'off',
+  },
 });
 
 // WhatsApp: solo si está configurado (WHATSAPP_PROVIDER distinto de disabled).
@@ -52,6 +68,7 @@ await app.listen({ host: '0.0.0.0', port: env.PORT });
 
 if (env.APP_ENV === 'local') {
   app.log.info(`Simulador en http://localhost:${env.PORT}/simulador`);
+  app.log.info('Links del piloto web: npm run pilot -- crear 1');
 }
 if (whatsappApi) {
   app.log.info(`Webhook de WhatsApp (${env.WHATSAPP_PROVIDER}) en /webhooks/whatsapp`);

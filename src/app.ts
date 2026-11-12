@@ -4,20 +4,30 @@ import {
   registerSimulatorRoutes,
   type SimulatorDeps,
 } from './modules/simulator/simulator.routes.js';
+import { registerWebRoutes, type WebDeps } from './modules/web/web.routes.js';
 
 export interface AppOptions {
   logLevel: string;
   checkDatabase: DatabaseCheck;
   /** Solo en local: el simulador no tiene login. */
   simulator?: SimulatorDeps;
+  /** El piloto web, con links personales. */
+  web?: WebDeps;
   /** Solo para tests: a dónde se escriben los logs. */
   logStream?: NodeJS.WritableStream;
+}
+
+// Sin la query, porque la verificación del webhook trae ahí su token, y sin el token del link
+// personal de la web, que alcanza para entrar como esa persona.
+export function safeUrl(url: string): string {
+  return (url.split('?')[0] ?? '').replace(/^\/p\/[^/]+/, '/p/:token');
 }
 
 export function buildApp({
   logLevel,
   checkDatabase,
   simulator,
+  web,
   logStream,
 }: AppOptions): FastifyInstance {
   const app = Fastify({
@@ -27,10 +37,9 @@ export function buildApp({
       // Por ley y por diseño, en los logs no van datos personales ni secretos.
       redact: ['req.headers.authorization', 'req.headers.cookie', 'req.remoteAddress'],
       serializers: {
-        // Sin la query: la verificación del webhook trae ahí el token de verificación.
         req: (request: { method: string; url: string }) => ({
           method: request.method,
-          url: request.url.split('?')[0],
+          url: safeUrl(request.url),
         }),
       },
     },
@@ -48,6 +57,7 @@ export function buildApp({
 
   registerHealthRoutes(app, checkDatabase);
   if (simulator) registerSimulatorRoutes(app, simulator);
+  if (web) registerWebRoutes(app, web);
 
   return app;
 }
