@@ -1,0 +1,41 @@
+# Textos del alta y de las palabras reservadas para el piloto web. Los edita el rol de contenidos.
+#
+# BORRADOR: antes del piloto los revisa alguien con formación legal (Ley 25.326).
+# Si se cambia el texto del pedido de consentimiento, hay que subir la versión: queda guardada
+# junto con cada consentimiento, para saber qué aceptó cada persona.
+#
+# En la web, las palabras ACEPTO, NO, BAJA y AYUDA también son botones grandes.
+version: web-v1-borrador
+revision: borrador
+
+pedido: >-
+  ¡Hola! Soy Charlá, un curso para aprender a usar la inteligencia artificial en el día a día,
+  con lecciones de unos 3 minutos. Antes de empezar, necesito tu permiso.
+
+  Vamos a guardar tu avance en el curso. No te pedimos tu nombre ni tu teléfono. Para corregir
+  tus prácticas usamos servicios de inteligencia artificial de otras empresas, fuera de
+  Argentina. Tus audios se pasan a texto y se borran enseguida.
+
+  Este link es solo tuyo: no lo compartas. Charlá nunca te va a pedir claves, códigos ni datos de
+  tu cuenta. Cuando quieras, tocá BAJA y borramos todos tus datos. Si necesitás hablar con una
+  persona, tocá AYUDA.
+
+  Si estás de acuerdo, tocá ACEPTO. Si no, tocá NO.
+
+recordatorio: >-
+  Para empezar necesito tu permiso. Tocá ACEPTO para empezar, o NO si preferís no seguir.
+
+bienvenida: >-
+  ¡Gracias! Ya está todo listo. Cada día de semana te espera una lección de unos 3 minutos.
+  Cuando quieras, tocá el botón verde y arrancamos la primera.
+
+rechazo: >-
+  Entendido. No guardamos tus datos. Si algún día querés probar, volvé a abrir este link.
+
+baja: >-
+  Listo. Borramos todos tus datos y este link deja de funcionar. Gracias por haber sido parte de
+  Charlá.
+
+ayuda: >-
+  Listo, le avisamos a una persona del equipo para que te escriba por WhatsApp. Mientras tanto,
+  acordate: Charlá nunca te pide claves ni códigos.

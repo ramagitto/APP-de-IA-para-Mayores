@@ -3,6 +3,8 @@ import { parse } from 'yaml';
 import { z } from 'zod';
 
 export const CONSENT_FILE = 'content/consentimiento.yaml';
+// El piloto web tiene su propio texto: no menciona WhatsApp y explica el link personal.
+export const WEB_CONSENT_FILE = 'content/consentimiento-web.yaml';
 
 const consentSchema = z.strictObject({
   version: z.string().min(1).max(40),
@@ -30,9 +32,13 @@ export function parseConsentContent(yamlText: string): ConsentContent {
   return content;
 }
 
-let cached: ConsentContent | undefined;
+const cache = new Map<string, ConsentContent>();
 
-export function loadConsentContent(): ConsentContent {
-  cached ??= parseConsentContent(readFileSync(CONSENT_FILE, 'utf8'));
-  return cached;
+export function loadConsentContent(file: string = CONSENT_FILE): ConsentContent {
+  let content = cache.get(file);
+  if (!content) {
+    content = parseConsentContent(readFileSync(file, 'utf8'));
+    cache.set(file, content);
+  }
+  return content;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loadConsentContent, parseConsentContent } from './consent-content.js';
+import { loadConsentContent, parseConsentContent, WEB_CONSENT_FILE } from './consent-content.js';
 import { detectKeyword } from './keywords.js';
 
 describe('detectKeyword', () => {
@@ -41,6 +41,16 @@ describe('textos del alta', () => {
 
     expect(pedido).toMatch(/fuera de Argentina/);
     expect(pedido).toMatch(/nunca te va a pedir claves/);
+  });
+
+  it('el texto de la web es válido, no habla de WhatsApp en el pedido y pide cuidar el link', () => {
+    const web = loadConsentContent(WEB_CONSENT_FILE);
+
+    expect(web.pedido).toMatch(/fuera de Argentina/);
+    expect(web.pedido).toMatch(/nunca te va a pedir claves/);
+    expect(web.pedido).toMatch(/no lo compartas/);
+    expect(web.pedido).not.toMatch(/WhatsApp/);
+    expect(web.version).not.toBe(loadConsentContent().version);
   });
 
   it('rechaza un pedido que no explica cómo responder', () => {

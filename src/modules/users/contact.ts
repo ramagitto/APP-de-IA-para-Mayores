@@ -2,9 +2,11 @@ import { decryptPhone, encryptPhone, hashPhone, normalizePhone, type PhoneKeys }
 
 // Cómo se identifica a una persona en un canal. WhatsApp manda un id por empresa (BSUID) en
 // cada mensaje, y el teléfono puede faltar si la persona usa nombre de usuario: por eso el
-// contacto puede ser un teléfono ("tel:") o ese id ("wa:"). Se guarda cifrado y con hash,
-// igual que antes el teléfono.
-export type ContactId = `tel:${string}` | `wa:${string}`;
+// contacto puede ser un teléfono ("tel:") o ese id ("wa:"). En la web es el id del participante
+// del piloto ("web:"). Se guarda cifrado y con hash, igual que antes el teléfono.
+export type ContactId = `tel:${string}` | `wa:${string}` | `web:${string}`;
+
+export type ContactKind = 'phone' | 'whatsapp' | 'web';
 
 export function phoneContact(raw: string): ContactId {
   return `tel:${normalizePhone(raw)}`;
@@ -17,9 +19,17 @@ export function whatsappContact(businessScopedUserId: string): ContactId {
   return `wa:${businessScopedUserId}`;
 }
 
-export function parseContact(contact: string): { kind: 'phone' | 'whatsapp'; value: string } {
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+export function webContact(participantId: string): ContactId {
+  if (!UUID.test(participantId)) throw new Error('El id del participante no es válido');
+  return `web:${participantId}`;
+}
+
+export function parseContact(contact: string): { kind: ContactKind; value: string } {
   if (contact.startsWith('tel:')) return { kind: 'phone', value: contact.slice(4) };
   if (contact.startsWith('wa:')) return { kind: 'whatsapp', value: contact.slice(3) };
+  if (contact.startsWith('web:')) return { kind: 'web', value: contact.slice(4) };
   throw new Error('El contacto no tiene un formato válido');
 }
 

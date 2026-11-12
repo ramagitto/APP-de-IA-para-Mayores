@@ -1,5 +1,6 @@
 import type { Orm } from '../../shared/db/database.js';
 import type { OutgoingMessage } from '../lessons/lesson-attempt.js';
+import { type EventRecorder, NO_EVENTS } from '../metrics/product-events.js';
 import type { ConsentContent } from '../onboarding/consent-content.js';
 import { detectKeyword } from '../onboarding/keywords.js';
 import type { OnboardingService } from '../onboarding/onboarding-service.js';
@@ -40,6 +41,7 @@ export interface MessageRouterDeps {
   onboarding: OnboardingService;
   conversation: ConversationService;
   voice: VoiceService;
+  events?: EventRecorder;
 }
 
 function info(text: string): OutgoingMessage {
@@ -49,7 +51,16 @@ function info(text: string): OutgoingMessage {
 // Primera parada de todo mensaje, venga de WhatsApp o del simulador.
 // Orden: BAJA y AYUDA primero; después, el alta si la persona no aceptó; por último, la lección.
 export class MessageRouter {
-  constructor(private readonly deps: MessageRouterDeps) {}
+  private readonly events: EventRecorder;
+
+  constructor(private readonly deps: MessageRouterDeps) {
+    this.events = deps.events ?? NO_EVENTS;
+  }
+
+  /** El servicio de conversación, para consultar el estado sin mandar un mensaje. */
+  get conversation(): ConversationService {
+    return this.deps.conversation;
+  }
 
   async handle(incoming: IncomingMessage): Promise<RouterReply> {
     const { orm, keys, consent } = this.deps;
@@ -85,7 +96,7 @@ export class MessageRouter {
     const keyword = detectKeyword(text);
 
     if (keyword === 'baja') {
-      await this.forget(incoming.contact);
+      await this.forget(incoming.contact, incoming.now);
       return reply([info(consent.baja)], { transcript, forgotten: true });
     }
 
@@ -96,6 +107,13 @@ export class MessageRouter {
         reason: 'ayuda',
         now: incoming.now,
       });
+      if (user) {
+        await this.events.record({
+          subjectId: user.id,
+          type: 'help_requested',
+          occurredAt: incoming.now,
+        });
+      }
       return reply([info(consent.ayuda)], { transcript });
     }
 
@@ -123,17 +141,28 @@ export class MessageRouter {
         reason: 'care',
         now: incoming.now,
       });
+      await this.events.record({
+        subjectId: user.id,
+        type: 'care_message',
+        occurredAt: incoming.now,
+      });
     }
 
     return { ...result, transcript, forgotten: false };
   }
 
-  /** BAJA: borra a la persona, su alta en curso y sus pedidos de ayuda. */
-  async forget(contact: ContactId): Promise<void> {
+  /**
+   * BAJA: borra a la persona, su alta en curso y sus pedidos de ayuda. Los eventos de métricas
+   * quedan, pero anónimos: su id ya no se relaciona con nadie.
+   */
+  async forget(contact: ContactId, now: Date = new Date()): Promise<void> {
     const { orm, keys } = this.deps;
     const user = await findUserByContact(orm, keys, contact);
 
-    if (user) await deleteUser(orm, user.id);
+    if (user) {
+      await deleteUser(orm, user.id);
+      await this.events.record({ subjectId: user.id, type: 'unsubscribed', occurredAt: now });
+    }
     await this.deps.onboarding.cancel(contact);
     await deleteSupportRequestsByContact(orm, keys, contact);
   }
