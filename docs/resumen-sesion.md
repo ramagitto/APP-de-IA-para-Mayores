@@ -10,7 +10,7 @@ Las sesiones anteriores (Fases 2 a 4) quedaron en el historial de git de este ar
 
 | Pedido                                                  | Estado                                                                                                                               |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Dejar la Fase 4 como está y pausar la Fase 5            | Hecho. Su código entra a `main` con el piloto, apagado (ver abajo)                                                                   |
+| Dejar la Fase 4 como está y pausar la Fase 5            | Hecho. Ya estaba en `main` (PR #5, mergeado el 11/11) y queda apagado                                                                |
 | Web app para celular, pensada para mayores              | Hecho: letra grande con tres tamaños, alto contraste, botones grandes, botón para hablar, botones por paso y PWA                     |
 | Link personal con token, sin usuario ni contraseña      | Hecho. `npm run pilot -- crear 10`                                                                                                   |
 | Consentimiento primero, BAJA y AYUDA como en WhatsApp   | Hecho, con el mismo `MessageRouter` y un texto de consentimiento propio para la web                                                  |
@@ -22,7 +22,7 @@ Las sesiones anteriores (Fases 2 a 4) quedaron en el historial de git de este ar
 
 ## Lo que tenés que saber primero
 
-1. **El PR #6 incluye la Fase 4.** El piloto web reutiliza el alta con consentimiento, BAJA y AYUDA, que estaban en la rama de la Fase 4, así que la rama nueva salió de ahí. WhatsApp queda apagado (`WHATSAPP_PROVIDER=disabled`). **El PR #5 quedó abierto y ya es redundante:** podés cerrarlo. Si preferías no tener la Fase 4 en `main`, se revierte el merge (decisión 53).
+1. **La Fase 4 ya estaba en `main`.** Otra persona del equipo mergeó el PR #5 el 11/11. El piloto web reutiliza su alta con consentimiento, BAJA y AYUDA, así que la rama nueva salió de ahí, y el PR #6 sumó solo el piloto. WhatsApp queda apagado (`WHATSAPP_PROVIDER=disabled`). Al principio lo describí como si el #6 trajera la Fase 4: no fue así, y lo corregí en estos documentos.
 2. **Sin clave de OpenAI no hay micrófono en producción.** El reconocimiento de voz del navegador puede mandar el audio a Google o Apple, así que en producción no se usa. Sin la clave, la app funciona solo con texto (decisión 62).
 3. **El servidor gratuito se duerme** a los 15 minutos sin uso y tarda cerca de un minuto en despertar. `npm run pilot -- recordatorios` lo despierta antes de que mandes los mensajes, y la app avisa "Charlá se está despertando". Si molesta, Render pago lo resuelve.
 4. **El sistema no guarda nombres ni teléfonos.** Cada persona es un código (P01, P02...). Hace falta una planilla privada del equipo con código, nombre y teléfono.
@@ -70,7 +70,6 @@ npm run metrics
 
 Las 20 nuevas (de la 53 a la 72) están en [decisiones-pendientes.md](decisiones-pendientes.md), con por qué y cómo se revierten. Las de importancia alta:
 
-- **53.** El PR del piloto incluye la Fase 4.
 - **54 y 55.** Link con token; sin nombres ni teléfonos en el sistema.
 - **56.** El consentimiento web está en borrador: lo escribí yo.
 - **60.** Los eventos de métricas quedan, anónimos, después de la BAJA. Hay que confirmarlo en la revisión legal.
@@ -86,8 +85,7 @@ Estimé el piloto web en **36 h** (43 con margen), con detalle en [horas.md](hor
 
 1. **Publicar la app** con la [checklist](checklist-piloto.md), secciones 2 a 4.
 2. **Probar en un Android y un iPhone** (sección 3) y avisarme si algo falla, con el modelo y la versión.
-3. **Cerrar el PR #5**, que quedó redundante.
-4. **Revisar las decisiones 53 a 72**, sobre todo la 60 y la 61.
-5. **Hacer revisar** el consentimiento web, los recordatorios, las lecciones y los mensajes de cuidado.
+3. **Revisar las decisiones 53 a 72**, sobre todo la 60 y la 61.
+4. **Hacer revisar** el consentimiento web, los recordatorios, las lecciones y los mensajes de cuidado.
 
 Freno acá, como pediste.
