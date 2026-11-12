@@ -6,6 +6,31 @@ Lo marcado como _(supuesto)_ no lo pude confirmar en la documentación oficial: 
 
 **Orden recomendado:** 1, publicar la app (sección 2); 2, probarla en celulares con proveedores simulados, que no gastan (sección 3); 3, cargar las claves con tope de gasto (sección 4); 4, cerrar lo de la sección 1 y dar los links.
 
+## Estado de la publicación (12/11/2026)
+
+La app está publicada **gratis**, con proveedores simulados: se usa escribiendo, con todos los botones, pero todavía sin micrófono ni tutor con IA real. La publicó Claude con autorización para crear recursos gratuitos; no se usó nada pago.
+
+| Pieza                  | Estado                                                                                                                                                                       |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Base de datos (Neon)   | ✅ Proyecto `charla-piloto`, plan Free, región `aws-us-east-1` (no hay región en Sudamérica). Conexión directa, sin pooler, con `sslmode=verify-full`. Migraciones aplicadas |
+| Servidor (Render)      | ✅ Servicio `charla-piloto`, plan Free, región Virginia, en <https://charla-piloto.onrender.com>. `/ping` y `/health` responden 200                                          |
+| Participante de prueba | ✅ P00 creado. Su link quedó solo en la PC, en `var/link-p00.txt` (fuera del repositorio). También sale con `npm run pilot -- listar`                                        |
+| Voz de Charlá (Azure)  | ❌ No se creó: la cuenta de Azure no tiene suscripción, y activarla pide tarjeta. Charlá habla con la voz del celular (`TTS_PROVIDER=mock`)                                  |
+| Tutor (Anthropic)      | ⏸️ Sin clave: hace falta cargar crédito, que es pago. El tutor responde por reglas (`LLM_PROVIDER=mock`)                                                                     |
+| Micrófono (OpenAI)     | ⏸️ Sin clave, por lo mismo. Sin ella, en producción la app funciona solo con texto (`STT_PROVIDER=mock`)                                                                     |
+| Secretos               | En `.env.produccion` de la PC que publicó (Git lo ignora) y en las variables del servicio en Render. Ninguno en el repositorio                                               |
+
+**Diferencias con la sección 2:**
+
+- **El servicio se creó con la API de Render, no con el blueprint.** Usa la URL pública del repositorio, sin conectar GitHub, así que **no se despliega solo** cuando cambia `main`. Para publicar cambios: en el panel de Render, **Manual Deploy > Deploy latest commit**.
+- Las variables son las de `.env.example` con valores de producción, salvo `PORT`, que la asigna Render.
+
+**Pendiente:**
+
+1. [ ] **Anular la clave de API de Render** que se usó para publicar (pasó por el chat): en **Account Settings > API Keys**, borrarla y, si hace falta, crear otra. El servicio sigue funcionando sin ella.
+2. [ ] Probar el link de P00 en un Android y un iPhone (sección 3).
+3. [ ] Si se decide pagar la IA: cargar crédito con tope en Anthropic y OpenAI (sección 4), agregar en **Environment** del servicio `LLM_PROVIDER=anthropic` con `ANTHROPIC_API_KEY`, y `STT_PROVIDER=openai` con `OPENAI_API_KEY`, y guardar con nuevo despliegue. Con eso aparece el micrófono.
+
 ## 1. Antes de dar el primer link
 
 ### Seguridad de las personas
