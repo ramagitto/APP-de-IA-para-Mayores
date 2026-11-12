@@ -2,7 +2,7 @@
 
 Revisión de la app web (`/p/<token>`) del 12/11/2026, antes del rediseño. Se recorrió la app completa en local, con Chrome en vista de iPhone (390 × 844) en modo claro y oscuro: bienvenida, consentimiento, lección, respuesta del tutor, desafío, cierre y menú. También se leyó el código de [web-page.ts](../src/modules/web/web-page.ts), [charla.css](../public/charla.css) y [charla.js](../public/charla.js).
 
-**Todavía no hay código nuevo.** Primero se acuerda el diagnóstico, después el mini plan, y recién con el OK se programa.
+**Actualización (12/11/2026):** el equipo eligió el curso con pantallas, Atkinson Hyperlegible con títulos en serif y reescribir los textos del alta. El rediseño quedó hecho según el [ADR 0013](adr/0013-rediseno-del-frontend.md).
 
 ## Lo que está bien y hay que conservar
 

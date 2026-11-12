@@ -6,17 +6,17 @@ Se actualiza al final de cada sesión de trabajo y al cerrar cada fase. Cuando a
 
 ## En una mirada
 
-| Parte                        | Estado                                                                   |
-| ---------------------------- | ------------------------------------------------------------------------ |
-| Fases 0 a 3                  | ✅ Mergeadas en `main`                                                   |
-| Fase 4: WhatsApp, alta, BAJA | ✅ Mergeada, apagada y guardada para después                             |
-| Piloto web (código)          | ✅ Mergeado en `main` (PR #6)                                            |
-| Piloto web (publicación)     | 🟡 Publicado gratis, con IA y voz simuladas. Falta probarlo en celulares |
-| **Rediseño del frontend**    | 🟡 Diagnóstico hecho. Faltan respuestas del equipo y el mini plan        |
-| Contenidos y textos legales  | 🔴 Todo en borrador                                                      |
-| Fase 5: programación         | ⏸️ En pausa: los recordatorios van a mano                                |
-| Fases 6 y 8                  | ⏳ Pendientes ([plan](plan-de-fases.md))                                 |
-| Fase 7: métricas             | 🟡 En buena parte hecha con el piloto web (`npm run metrics`)            |
+| Parte                        | Estado                                                                     |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| Fases 0 a 3                  | ✅ Mergeadas en `main`                                                     |
+| Fase 4: WhatsApp, alta, BAJA | ✅ Mergeada, apagada y guardada para después                               |
+| Piloto web (código)          | ✅ Mergeado en `main` (PR #6)                                              |
+| Piloto web (publicación)     | 🟡 Publicado gratis, con IA y voz simuladas. Falta probarlo en celulares   |
+| **Rediseño del frontend**    | 🟡 Hecho en local, sin commitear. Falta probarlo en celulares y publicarlo |
+| Contenidos y textos legales  | 🔴 Todo en borrador                                                        |
+| Fase 5: programación         | ⏸️ En pausa: los recordatorios van a mano                                  |
+| Fases 6 y 8                  | ⏳ Pendientes ([plan](plan-de-fases.md))                                   |
+| Fase 7: métricas             | 🟡 En buena parte hecha con el piloto web (`npm run metrics`)              |
 
 ## La app publicada
 
@@ -48,7 +48,7 @@ Responsables por rol, nunca por nombre, porque el repositorio es público. "Desa
 
 **Producto**
 
-- [ ] **Rediseño del frontend.** Se pidió el 12/11 una mejora fuerte de la app web. El diagnóstico está hecho ([diagnostico-frontend.md](diagnostico-frontend.md)). Falta que el equipo responda sus 4 preguntas, después el mini plan con horas y criterios, y el OK. Recién ahí, el código. Archivos: [web-page.ts](../src/modules/web/web-page.ts), [charla.css](../public/charla.css) y [charla.js](../public/charla.js). _Desarrollo._
+- [ ] **Rediseño del frontend:** hecho en local el 12/11 ([ADR 0013](adr/0013-rediseno-del-frontend.md)). Falta revisarlo, commitearlo, publicarlo (Manual Deploy en Render) y probarlo en un Android, un iPhone y con 2 o 3 personas mayores. _Desarrollo y pruebas con usuarios._
 - [ ] **Probar el link de P00 en un Android y en un iPhone** ([checklist, sección 3](checklist-piloto.md)). Si algo falla, anotar el modelo y la versión. _Pruebas con usuarios._
 - [ ] **Decidir si se paga la IA.** Sin Anthropic, el tutor responde por reglas. Sin OpenAI, no hay micrófono. Los pasos, con tope de gasto, están en la [checklist, sección 4](checklist-piloto.md). _Equipo._
 - [ ] Si se paga: **correr `npm run evals` con el proveedor real.** Las categorías críticas tienen que dar 100%. _Desarrollo._
@@ -61,7 +61,7 @@ Responsables por rol, nunca por nombre, porque el repositorio es público. "Desa
 
 **Contenido** (todo en `revision: borrador`)
 
-- [ ] **Reescribir el consentimiento y el alta para la web:** hoy dicen "tocá ACEPTO, NO, BAJA, AYUDA", que son palabras de WhatsApp y no botones de la app (diagnóstico, punto 1). _Contenidos._
+- [ ] **Revisar los textos nuevos del alta web** (`web-v2-borrador`), que ahora nombran los botones reales. _Contenidos._
 - [ ] Aprobar las 10 lecciones de `content/lessons/`. _Contenidos._
 - [ ] Aprobar los textos de los recordatorios ([recordatorios-web.yaml](../content/recordatorios-web.yaml)). _Contenidos._
 

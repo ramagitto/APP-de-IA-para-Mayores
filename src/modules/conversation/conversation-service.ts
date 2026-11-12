@@ -66,12 +66,19 @@ export type LessonStatus =
       kind: 'in_lesson';
       step: 'practice' | 'challenge';
       lessonTitle: string;
+      lessonNumber: number;
       /** La última consigna, por si la persona abre la web en otro celular. */
       prompt: string;
     }
   | { kind: 'ready'; lessonTitle: string; lessonNumber: number }
   | { kind: 'done_today' }
   | { kind: 'all_done' };
+
+/** Cuántas lecciones terminó la persona, sobre el total del curso. La web lo muestra. */
+export interface CourseProgress {
+  completed: number;
+  total: number;
+}
 
 interface TurnOutcome {
   messages: OutgoingMessage[];
@@ -88,10 +95,15 @@ export class ConversationService {
     this.events = deps.events ?? NO_EVENTS;
   }
 
-  async status(userId: string, now: Date): Promise<{ lesson: LessonStatus; streak: number }> {
+  async status(
+    userId: string,
+    now: Date,
+  ): Promise<{ lesson: LessonStatus; streak: number; progress: CourseProgress }> {
     const { orm, lessons, calendar } = this.deps;
     const streak = await getStreak(orm, userId);
     const shownStreak = currentStreak(streak, now, calendar);
+    const completed = await listCompletedLessonIds(orm, userId);
+    const progress = { completed: completed.length, total: lessons.length };
     const stored = await findOpenAttempt(orm, userId);
     const open = stored && lessons.find((candidate) => candidate.id === stored.attempt.lessonId);
 
@@ -99,10 +111,12 @@ export class ConversationService {
       const practice = stored.attempt.state === 'awaiting_practice';
       return {
         streak: shownStreak,
+        progress,
         lesson: {
           kind: 'in_lesson',
           step: practice ? 'practice' : 'challenge',
           lessonTitle: open.title,
+          lessonNumber: completed.length + 1,
           prompt: practice
             ? open.introScript
             : `${open.challengeText} ${open.challengeSafetyReminder}`,
@@ -111,15 +125,15 @@ export class ConversationService {
     }
 
     if (!canStartLesson(streak, now, calendar)) {
-      return { streak: shownStreak, lesson: { kind: 'done_today' } };
+      return { streak: shownStreak, progress, lesson: { kind: 'done_today' } };
     }
 
-    const completed = await listCompletedLessonIds(orm, userId);
     const next = nextLesson(lessons, completed);
-    if (!next) return { streak: shownStreak, lesson: { kind: 'all_done' } };
+    if (!next) return { streak: shownStreak, progress, lesson: { kind: 'all_done' } };
 
     return {
       streak: shownStreak,
+      progress,
       lesson: { kind: 'ready', lessonTitle: next.title, lessonNumber: completed.length + 1 },
     };
   }

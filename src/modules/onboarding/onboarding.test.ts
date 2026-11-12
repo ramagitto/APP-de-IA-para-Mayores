@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { loadConsentContent, parseConsentContent, WEB_CONSENT_FILE } from './consent-content.js';
+import {
+  loadConsentContent,
+  parseConsentContent,
+  WEB_BUTTONS,
+  WEB_CONSENT_FILE,
+} from './consent-content.js';
 import { detectKeyword } from './keywords.js';
 
 describe('detectKeyword', () => {
@@ -51,6 +56,16 @@ describe('textos del alta', () => {
     expect(web.pedido).toMatch(/no lo compartas/);
     expect(web.pedido).not.toMatch(/WhatsApp/);
     expect(web.version).not.toBe(loadConsentContent().version);
+  });
+
+  it('en la web, los textos nombran los botones y no las palabras de WhatsApp', () => {
+    const web = loadConsentContent(WEB_CONSENT_FILE);
+
+    for (const label of WEB_BUTTONS) expect(web.pedido).toContain(label);
+    for (const text of [web.pedido, web.recordatorio, web.bienvenida]) {
+      expect(text).not.toMatch(/\b(ACEPTO|NO|BAJA|AYUDA)\b/);
+      expect(text).not.toMatch(/botón verde/);
+    }
   });
 
   it('rechaza un pedido que no explica cómo responder', () => {

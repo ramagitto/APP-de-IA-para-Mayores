@@ -124,6 +124,8 @@ describe('página del piloto web', () => {
       ['icono-192.png', 'image/png'],
       ['apple-touch-icon.png', 'image/png'],
       ['icono.svg', 'image/svg+xml'],
+      ['atkinson-400.woff2', 'font/woff2'],
+      ['serif-700.woff2', 'font/woff2'],
     ]) {
       const response = await app.inject({ method: 'GET', url: `/app/${file}` });
       expect(response.statusCode, file).toBe(200);
@@ -301,7 +303,13 @@ describe('recordatorios', () => {
           state: {
             phase: 'active',
             streak: 1,
-            lesson: { kind: 'in_lesson', step: 'practice', lessonTitle: 'Repreguntar', prompt: '' },
+            lesson: {
+              kind: 'in_lesson',
+              step: 'practice',
+              lessonTitle: 'Repreguntar',
+              lessonNumber: 9,
+              prompt: '',
+            },
           },
         },
         {

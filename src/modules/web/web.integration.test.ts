@@ -34,6 +34,7 @@ const database = createDatabase(env.DATABASE_URL);
 const orm = createOrm(database);
 const keys = phoneKeysFromBase64(env.PHONE_ENCRYPTION_KEY, env.PHONE_HASH_KEY);
 const consent = loadConsentContent(WEB_CONSENT_FILE);
+const lessons = loadLessons('content/lessons');
 const ledger = new InMemoryCostLedger();
 const events = new DbEventRecorder(orm, 'web');
 const voice = new VoiceService({
@@ -50,7 +51,7 @@ const router = new MessageRouter({
   onboarding: new OnboardingService({ orm, keys, consent, consentTypes: WEB_CONSENTS, events }),
   conversation: new ConversationService({
     orm,
-    lessons: loadLessons('content/lessons'),
+    lessons,
     calendar: createLessonCalendar(),
     tutor: new LlmTutor({ provider: new MockLlmProvider(), ledger, dailyBudgetUsd: 1 }),
     voice,
@@ -123,7 +124,10 @@ describe('recorrido por la web', () => {
     const first = await send(participant, 'Hola');
     expect(first.messages[0]?.text).toBe(consent.pedido);
     expect(await findUserByContact(orm, keys, contact)).toBeUndefined();
-    expect((await backend.state(participant, monday)).phase).toBe('consent');
+    expect(await backend.state(participant, monday)).toMatchObject({
+      phase: 'consent',
+      consentText: consent.pedido,
+    });
 
     const accepted = await send(participant, 'ACEPTO');
     const user = await findUserByContact(orm, keys, contact);
@@ -139,13 +143,17 @@ describe('recorrido por la web', () => {
     await send(participant, 'ACEPTO');
 
     const ready = await backend.state(participant, monday, { opened: true });
-    expect(ready.lesson).toMatchObject({ kind: 'ready', lessonNumber: 1 });
+    expect(ready).toMatchObject({
+      lesson: { kind: 'ready', lessonNumber: 1 },
+      progress: { completed: 0, total: lessons.length },
+    });
 
     const intro = await send(participant, 'Empezar la lección');
     expect(intro.messages[0]?.kind).toBe('intro');
     expect((await backend.state(participant, monday)).lesson).toMatchObject({
       kind: 'in_lesson',
       step: 'practice',
+      lessonNumber: 1,
     });
 
     await send(participant, clearRequest);
@@ -156,7 +164,11 @@ describe('recorrido por la web', () => {
 
     await send(participant, 'Sí, lo hice');
     const done = await backend.state(participant, monday);
-    expect(done).toMatchObject({ streak: 1, lesson: { kind: 'done_today' } });
+    expect(done).toMatchObject({
+      streak: 1,
+      lesson: { kind: 'done_today' },
+      progress: { completed: 1 },
+    });
     expect(await eventsOf(participant)).toEqual([
       'signup',
       'app_opened',

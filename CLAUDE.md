@@ -80,7 +80,7 @@ Curso de IA para personas de 65+, por la web (piloto) y WhatsApp (para después)
 - **Fases 1 a 3:** mergeadas en `main`.
 - **Fase 4:** WhatsApp, alta, BAJA y AYUDA: hecha y guardada para después, apagada por defecto.
 - **Piloto web:** hecho el 12/11/2026 y publicado gratis en `https://charla-piloto.onrender.com`, con IA y voz simuladas (detalle en el PR #8). Render no publica solo: después de mergear, **Manual Deploy**. Falta probarlo en un Android y un iPhone.
-- **Rediseño del frontend:** pedido el 12/11/2026. Falta el diagnóstico y el mini plan. Sigue sin frameworks (ADR 0011).
+- **Rediseño del frontend:** hecho el 12/11/2026 ([ADR 0013](docs/adr/0013-rediseno-del-frontend.md)): una pantalla por momento del curso, colores de la presentación, fuentes propias servidas desde `@fontsource`. Falta probarlo en celulares.
 - **Fase 5:** en pausa por el cambio de rumbo.
 - **Pendientes, con prioridad y responsable:** [docs/estado.md](docs/estado.md). Actualizarlo al cerrar cada sesión.
 - **Antes del piloto:** [docs/checklist-piloto.md](docs/checklist-piloto.md).

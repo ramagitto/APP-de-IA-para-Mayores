@@ -4,12 +4,17 @@
 // - se graba en WebM/Opus (Android) o MP4/AAC (iPhone), según lo que acepte el navegador;
 // - el iPhone no reproduce audio solo si no hubo un toque antes: el primer toque "destraba" el
 //   reproductor, y después se reutiliza el mismo para cada audio.
+//
+// Hay una pantalla por momento del curso: bienvenida, permiso, inicio (la lección del día y el
+// avance), la lección (una conversación corta), el festejo al terminarla y la despedida. El
+// servidor dice en qué momento está la persona; esta página solo elige qué mostrar.
 (() => {
   'use strict';
 
   const token = location.pathname.split('/')[2] || '';
   const base = `/p/${token}`;
-  // Un mismo celular puede tener más de un participante: el historial se separa por link.
+  // Un mismo celular puede tener más de un participante: el historial se separa por link. Solo
+  // guarda la conversación de la lección en curso.
   const historyKey = `charla-historial-${token.slice(0, 10)}`;
   const MAX_HISTORY = 60;
   const MAX_RECORDING_SECONDS = 120;
@@ -17,26 +22,28 @@
 
   const $ = (id) => document.getElementById(id);
   const chat = $('chat');
+  const controls = $('controls');
   const statusBox = $('status');
   const choices = $('choices');
   const voiceBox = $('voice');
   const micButton = $('mic');
   const micLabel = $('mic-label');
+  const micIcon = $('mic-icon');
   const cancelButton = $('cancel-recording');
   const keyboardButton = $('show-keyboard');
+  const voiceButton = $('show-voice');
   const writeForm = $('write');
   const textInput = $('text');
   const menu = $('menu');
   const menuButton = $('menu-button');
-  const streakBox = $('streak');
 
+  const SCREENS = ['welcome', 'consent', 'home', 'lesson', 'done', 'end'];
+
+  // Etiqueta e ícono de cada tipo de mensaje de Charlá. Los demás van sin etiqueta.
   const LABELS = {
-    intro: 'Lección',
-    feedback: 'Charlá',
-    challenge: 'Desafío',
-    closing: 'Charlá',
-    care: 'Importante',
-    info: 'Charlá',
+    intro: ['book', 'La lección de hoy'],
+    challenge: ['target', 'Desafío'],
+    care: ['alert', 'Importante'],
   };
 
   const storage = {
@@ -65,59 +72,346 @@
 
   let history = storage.get(historyKey) || [];
   let state = null;
+  let screen = null;
   let voiceInput = 'off';
+  let preferKeyboard = false;
   let busy = false;
   let lastStateAt = 0;
   let installPrompt = null;
+  // El aviso de bienvenida que se muestra una vez en el inicio, después de aceptar.
+  let notice = '';
+
+  // ---------- Elementos ----------
+
+  function svgIcon(name) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'icon');
+    svg.setAttribute('aria-hidden', 'true');
+    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    use.setAttribute('href', `#i-${name}`);
+    svg.append(use);
+    return svg;
+  }
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text) node.textContent = text;
+    return node;
+  }
+
+  function button(text, className, onClick, iconName) {
+    const node = element('button', className);
+    node.type = 'button';
+    if (iconName) node.append(svgIcon(iconName));
+    node.append(text);
+    node.addEventListener('click', onClick);
+    return node;
+  }
+
+  // Un texto con varios párrafos: cada uno en su <p>, para que respire.
+  function paragraphs(container, text) {
+    container.replaceChildren(
+      ...String(text)
+        .split(/\n+/)
+        .filter((line) => line.trim())
+        .map((line) => element('p', '', line.trim())),
+    );
+  }
 
   // ---------- Tamaño de letra ----------
 
   function applySize(size) {
     document.documentElement.dataset.size = size;
+    document.querySelectorAll('[data-size]').forEach((node) => {
+      if (node.tagName === 'BUTTON')
+        node.setAttribute('aria-pressed', String(node.dataset.size === size));
+    });
   }
-  applySize(storage.get('charla-letra') || 'normal');
+  applySize(SIZES.includes(storage.get('charla-letra')) ? storage.get('charla-letra') : 'normal');
 
-  function nextSize() {
-    const current = storage.get('charla-letra') || 'normal';
-    const next = SIZES[(SIZES.indexOf(current) + 1) % SIZES.length];
-    storage.set('charla-letra', next);
-    applySize(next);
-    return next;
+  // ---------- Pantallas ----------
+
+  function show(name) {
+    screen = name;
+    $('loading').hidden = true;
+    for (const each of SCREENS) $(`screen-${each}`).hidden = each !== name;
+    controls.hidden = name === 'end';
+    showStatus('');
+    if (name !== 'lesson') window.scrollTo(0, 0);
   }
 
-  // ---------- Mensajes en pantalla ----------
+  // Lo que va abajo: botones, micrófono o teclado.
+  function setControls(items, talk) {
+    choices.replaceChildren(...items);
+    showVoice(Boolean(talk));
+    controls.hidden = items.length === 0 && !talk;
+  }
 
-  function scrollToEnd(element) {
-    requestAnimationFrame(() => element.scrollIntoView({ block: 'end', behavior: 'smooth' }));
+  function showWelcome() {
+    show('welcome');
+    setControls([
+      button('Empezar', 'primary', () => {
+        unlockAudio();
+        send({ text: 'Hola' });
+      }),
+    ]);
+  }
+
+  function showConsent(text) {
+    show('consent');
+    paragraphs($('consent-text'), text || '');
+    setControls([
+      button('Acepto', 'primary', () => {
+        unlockAudio();
+        stopPlayback();
+        send({ text: 'ACEPTO' });
+      }),
+      button('No, gracias', 'secondary', () => {
+        stopPlayback();
+        send({ text: 'NO' });
+      }),
+    ]);
+  }
+
+  $('consent-listen').addEventListener('click', () => {
+    unlockAudio();
+    playNow({ text: $('consent-text').textContent });
+  });
+
+  function greeting() {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return '¡Buen día!';
+    if (hour >= 12 && hour < 20) return '¡Buenas tardes!';
+    return '¡Buenas noches!';
+  }
+
+  function renderProgress(dots, text, streakBox, next) {
+    const progress = next.progress || { completed: 0, total: 0 };
+    const current = next.lesson && next.lesson.kind === 'ready' ? progress.completed : -1;
+    dots.replaceChildren(
+      ...Array.from({ length: progress.total }, (_, index) => {
+        const dot = element(
+          'li',
+          index < progress.completed ? 'done' : index === current ? 'current' : '',
+        );
+        dot.setAttribute('aria-hidden', 'true');
+        return dot;
+      }),
+    );
+    text.textContent =
+      progress.completed === 1
+        ? `1 de ${progress.total} lecciones hechas`
+        : `${progress.completed} de ${progress.total} lecciones hechas`;
+
+    streakBox.hidden = !(next.streak > 0);
+    streakBox.querySelector('span').textContent =
+      next.streak === 1 ? 'Empezaste tu racha' : `${next.streak} lecciones seguidas`;
+  }
+
+  function showHome() {
+    show('home');
+    $('home-title').textContent = greeting();
+    $('notice').hidden = !notice;
+    $('notice').textContent = notice;
+    notice = '';
+
+    const today = $('today');
+    const lesson = state.lesson || { kind: 'done_today' };
+    const progress = state.progress || { completed: 0, total: 0 };
+
+    if (lesson.kind === 'ready') {
+      today.className = 'card today';
+      const meta = element('p', 'meta');
+      meta.append(svgIcon('clock'), 'Unos 3 minutos');
+      today.replaceChildren(
+        element('p', 'eyebrow', `Lección ${lesson.lessonNumber} de ${progress.total}`),
+        element('h2', '', lesson.lessonTitle),
+        meta,
+      );
+      setControls([
+        button(
+          'Empezar la lección',
+          'primary',
+          () => {
+            unlockAudio();
+            history = [];
+            storage.set(historyKey, history);
+            send({ text: 'Empezar la lección' });
+          },
+          'arrow',
+        ),
+      ]);
+    } else {
+      today.className = 'card today rest';
+      const check = element('span', 'check');
+      check.append(svgIcon('check'));
+      const allDone = lesson.kind === 'all_done';
+      today.replaceChildren(
+        check,
+        element(
+          'h2',
+          '',
+          allDone ? '¡Terminaste todas las lecciones!' : '¡Ya hiciste la lección de hoy!',
+        ),
+        element(
+          'p',
+          '',
+          allDone
+            ? 'Muy pronto vamos a sumar más. ¡Felicitaciones!'
+            : 'La próxima te espera el próximo día de semana.',
+        ),
+      );
+      setControls([]);
+    }
+
+    renderProgress($('progress-dots'), $('progress-text'), $('streak'), state);
+  }
+
+  function showLesson(lesson, messages) {
+    const starting = screen !== 'lesson';
+    if (starting) {
+      show('lesson');
+      chat.replaceChildren();
+      history.forEach(renderBubble);
+    }
+    $('lesson-number').textContent = `Lección ${lesson.lessonNumber}`;
+    $('lesson-title').textContent = lesson.lessonTitle;
+    const challenge = lesson.step === 'challenge';
+    $('step-practice').className = challenge ? 'complete' : 'active';
+    $('step-challenge').className = challenge ? 'active' : '';
+
+    // Si se abre la lección en otro celular (sin historial), al menos se ve la consigna.
+    if (history.length === 0 && messages.length === 0 && lesson.prompt) {
+      addEntry({
+        who: 'charla',
+        kind: challenge ? 'challenge' : 'intro',
+        format: 'audio',
+        text: lesson.prompt,
+      });
+    }
+
+    if (challenge) {
+      setControls([
+        button('Sí, lo hice', 'primary', () => quickReply('Sí, lo hice'), 'check'),
+        button('Todavía no pude', 'secondary', () => quickReply('No pude')),
+      ]);
+    } else {
+      setControls([], true);
+    }
+    // Al empezar, se ve la lección desde arriba, con su título. Después, cada respuesta nueva se
+    // muestra desde su primera línea.
+    messages.forEach((entry, index) => {
+      const bubble = addEntry(entry);
+      if (index === 0 && !starting) scrollToStart(bubble);
+    });
+    if (starting) window.scrollTo(0, 0);
+  }
+
+  function quickReply(text) {
+    unlockAudio();
+    send({ text }, text === 'No pude' ? 'Todavía no pude' : text);
+  }
+
+  function showDone(finished, closing) {
+    show('done');
+    $('done-title').textContent = finished
+      ? `¡Muy bien! Terminaste la lección\u00a0${finished}`
+      : '¡Muy bien! Terminaste la lección';
+    const box = $('done-message');
+    box.hidden = closing.length === 0;
+    box.replaceChildren();
+    for (const entry of closing) {
+      const text = element('div', 'paras');
+      paragraphs(text, entry.text);
+      box.append(text);
+      if (entry.format === 'audio') box.append(listenButton(entry));
+    }
+    renderProgress($('done-dots'), $('done-progress'), $('done-streak'), state);
+    history = [];
+    storage.remove(historyKey);
+    setControls([button('Volver al inicio', 'primary', showHome)]);
+  }
+
+  function showEnd(title, text) {
+    stopPlayback();
+    storage.remove(historyKey);
+    menuButton.hidden = true;
+    menu.hidden = true;
+    show('end');
+    $('end-title').textContent = title;
+    $('end-text').textContent = text;
+  }
+
+  // Elige la pantalla según lo que dice el servidor. Si la persona venía de una lección y ya no
+  // está en una, la acaba de terminar: festejo.
+  function applyState(next, fresh) {
+    const previous = state;
+    state = next;
+    const messages = fresh || [];
+
+    if (next.phase === 'welcome') {
+      showWelcome();
+      if (messages.length) showMessages(messages);
+      return;
+    }
+    if (next.phase === 'consent') return showConsent(next.consentText);
+
+    const lesson = next.lesson || { kind: 'done_today' };
+    if (lesson.kind === 'in_lesson') return showLesson(lesson, messages);
+
+    const wasInLesson = previous && previous.lesson && previous.lesson.kind === 'in_lesson';
+    if (wasInLesson && screen === 'lesson') {
+      return showDone(previous.lesson.lessonNumber, messages);
+    }
+
+    if (previous && previous.phase === 'consent' && messages.length) {
+      notice = messages.map((entry) => entry.text).join('\n');
+      return showHome();
+    }
+    showHome();
+    if (messages.length) showMessages(messages);
+  }
+
+  // Fuera de la lección, una respuesta de Charlá (por ejemplo, la de "Pedir ayuda") se muestra
+  // en un cartel.
+  function showMessages(messages) {
+    showDialog(messages.map((entry) => entry.text).join('\n\n'), [['Entendido', 'primary']]);
+  }
+
+  // ---------- Mensajes de la lección ----------
+
+  function scrollToStart(node) {
+    requestAnimationFrame(() => node.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+  }
+
+  function scrollToEnd(node) {
+    requestAnimationFrame(() => node.scrollIntoView({ block: 'end', behavior: 'smooth' }));
+  }
+
+  function listenButton(entry) {
+    return button(
+      'Escuchar',
+      'pill',
+      () => {
+        unlockAudio();
+        playNow(entry);
+      },
+      'speaker',
+    );
   }
 
   function renderBubble(entry) {
-    const bubble = document.createElement('div');
-    bubble.className = `bubble ${entry.who}`;
-    if (entry.kind === 'care') bubble.classList.add('care');
-
-    if (entry.who === 'charla') {
-      const label = document.createElement('span');
-      label.className = 'label';
-      label.textContent = LABELS[entry.kind] || 'Charlá';
+    const bubble = element('div', `bubble ${entry.who}`);
+    if (entry.who === 'charla' && LABELS[entry.kind]) {
+      const [iconName, text] = LABELS[entry.kind];
+      bubble.classList.add(entry.kind);
+      const label = element('span', 'label');
+      label.append(svgIcon(iconName), text);
       bubble.append(label);
-
-      if (entry.format === 'audio') {
-        const listen = document.createElement('button');
-        listen.type = 'button';
-        listen.className = 'listen secondary';
-        listen.textContent = '🔊 Escuchar';
-        listen.addEventListener('click', () => {
-          unlockAudio();
-          playNow(entry);
-        });
-        bubble.append(listen);
-      }
     }
-
-    const body = document.createElement('div');
-    body.textContent = entry.text;
-    bubble.append(body);
+    bubble.append(element('div', '', entry.text));
+    if (entry.who === 'charla' && entry.format === 'audio') bubble.append(listenButton(entry));
     chat.append(bubble);
     return bubble;
   }
@@ -126,15 +420,7 @@
     history.push(entry);
     if (history.length > MAX_HISTORY) history = history.slice(-MAX_HISTORY);
     storage.set(historyKey, history);
-    const bubble = renderBubble(entry);
-    scrollToEnd(bubble);
-    return bubble;
-  }
-
-  // Un mensaje de Charlá que se muestra pero no se guarda (por ejemplo, el saludo inicial).
-  function addLocal(text) {
-    const bubble = renderBubble({ who: 'charla', kind: 'info', format: 'text', text });
-    scrollToEnd(bubble);
+    return renderBubble(entry);
   }
 
   function showStatus(text, isError) {
@@ -145,15 +431,20 @@
   let thinkingBubble = null;
   function showThinking(text) {
     hideThinking();
-    thinkingBubble = document.createElement('div');
-    thinkingBubble.className = 'bubble charla thinking';
-    thinkingBubble.textContent = text;
+    if (screen !== 'lesson') return showStatus(text);
+    thinkingBubble = element('div', 'bubble charla typing');
+    thinkingBubble.setAttribute('role', 'status');
+    thinkingBubble.append(element('span'), element('span'), element('span'));
+    thinkingBubble.append(element('span', 'typing-text', text));
+    // Los puntitos son la animación; el texto queda solo si tarda.
+    thinkingBubble.querySelectorAll('span')[3].hidden = !text.includes('despertando');
     chat.append(thinkingBubble);
     scrollToEnd(thinkingBubble);
   }
   function hideThinking() {
     if (thinkingBubble) thinkingBubble.remove();
     thinkingBubble = null;
+    if (screen !== 'lesson') showStatus('');
   }
 
   // ---------- Audio de Charlá ----------
@@ -283,8 +574,8 @@
     showStatus('');
     stopPlayback();
 
-    if (shownText) addEntry({ who: 'person', text: shownText });
-    showThinking('Charlá está pensando…');
+    if (shownText && screen === 'lesson') scrollToEnd(addEntry({ who: 'person', text: shownText }));
+    showThinking('Un momentito…');
     // El servidor gratuito se duerme si nadie lo usa: la primera vez puede tardar casi un minuto.
     const slow = setTimeout(
       () =>
@@ -299,7 +590,12 @@
       hideThinking();
 
       if (payload.audio) {
-        addEntry({ who: 'person', text: data.transcript ? `🎤 ${data.transcript}` : '🎤 Audio' });
+        scrollToEnd(
+          addEntry({
+            who: 'person',
+            text: data.transcript ? `«${data.transcript}»` : 'Audio enviado',
+          }),
+        );
       }
 
       const fresh = data.messages.map((message) => ({
@@ -309,12 +605,12 @@
         text: message.text,
         audioUrl: message.audioUrl,
       }));
-      fresh.forEach(addEntry);
 
       if (data.forgotten) return showFarewell();
-      if (data.state) applyState(data.state);
+      busy = false;
+      if (data.state) applyState(data.state, fresh);
+      else refreshState();
       enqueue(fresh.filter((entry) => entry.format === 'audio'));
-      if (fresh.length === 0) refreshState();
     } catch (error) {
       hideThinking();
       if (error.message === 'gone') return;
@@ -322,7 +618,7 @@
         error.message || 'No me llegó tu mensaje. Revisá que tengas internet y probá de nuevo.',
         true,
       );
-      if (payload.audio || payload.text) offerRetry(payload);
+      offerRetry(payload);
     } finally {
       clearTimeout(slow);
       busy = false;
@@ -336,6 +632,7 @@
       send(payload);
     });
     choices.replaceChildren(retry);
+    controls.hidden = false;
   }
 
   async function refreshState() {
@@ -346,96 +643,52 @@
       applyState(data);
     } catch (error) {
       if (error.message === 'gone') return;
+      $('loading').hidden = true;
       showStatus('No me pude conectar. Revisá que tengas internet.', true);
       choices.replaceChildren(button('Probar de nuevo', 'primary', refreshState));
+      controls.hidden = false;
     }
-  }
-
-  // ---------- Qué botones mostrar ----------
-
-  function button(text, className, onClick) {
-    const element = document.createElement('button');
-    element.type = 'button';
-    element.className = className;
-    element.textContent = text;
-    element.addEventListener('click', onClick);
-    return element;
-  }
-
-  function hint(text) {
-    const element = document.createElement('p');
-    element.className = 'hint';
-    element.textContent = text;
-    return element;
-  }
-
-  function quick(text, message, className) {
-    return button(text, className || 'secondary', () => {
-      unlockAudio();
-      send({ text: message }, text);
-    });
-  }
-
-  function showVoice(show) {
-    const canTalk = show && voiceInput !== 'off';
-    voiceBox.hidden = !canTalk;
-    keyboardButton.hidden = !show || !writeForm.hidden;
-    if (!show) writeForm.hidden = true;
-    // Sin micrófono, el teclado queda abierto.
-    if (show && voiceInput === 'off') {
-      writeForm.hidden = false;
-      keyboardButton.hidden = true;
-    }
-  }
-
-  function applyState(next) {
-    state = next;
-    streakBox.hidden = !(state.streak > 0);
-    streakBox.textContent =
-      state.streak === 1 ? '⭐ 1 lección' : `⭐ ${state.streak} lecciones seguidas`;
-
-    const items = [];
-    let talk = false;
-
-    if (state.phase === 'welcome') {
-      if (history.length === 0) addLocal('¡Hola! Soy Charlá. Tocá el botón verde para empezar.');
-      items.push(quick('Empezar', 'Hola', 'primary'));
-    } else if (state.phase === 'consent') {
-      items.push(quick('Acepto', 'ACEPTO', 'primary'));
-      items.push(quick('No, gracias', 'NO'));
-    } else {
-      const lesson = state.lesson || { kind: 'done_today' };
-      if (lesson.kind === 'ready') {
-        items.push(hint(`Lección ${lesson.lessonNumber}: ${lesson.lessonTitle}`));
-        items.push(quick('Empezar la lección de hoy', 'Empezar la lección', 'primary'));
-      } else if (lesson.kind === 'in_lesson') {
-        if (history.length === 0) {
-          addEntry({ who: 'charla', kind: 'intro', format: 'audio', text: lesson.prompt });
-        }
-        talk = true;
-        if (lesson.step === 'challenge') {
-          items.push(quick('Sí, lo hice', 'Sí, lo hice', 'primary'));
-          items.push(quick('Todavía no pude', 'No pude'));
-        }
-      } else if (lesson.kind === 'done_today') {
-        items.push(hint('Ya hiciste la lección de hoy. ¡Nos vemos en la próxima!'));
-      } else {
-        items.push(hint('Terminaste todas las lecciones que tenemos por ahora. ¡Felicitaciones!'));
-      }
-    }
-
-    choices.replaceChildren(...items);
-    showVoice(talk);
   }
 
   function setEnabled(enabled) {
     document
-      .querySelectorAll('.controls button, .controls textarea, .menu button')
-      .forEach((element) => {
-        if (element !== micButton && element !== cancelButton) element.disabled = !enabled;
+      .querySelectorAll('.controls button, .controls textarea, .sheet button')
+      .forEach((node) => {
+        if (node !== micButton && node !== cancelButton) node.disabled = !enabled;
       });
     micButton.disabled = !enabled && !isRecording();
   }
+
+  // ---------- Hablar o escribir ----------
+
+  function showVoice(show) {
+    const canTalk = show && voiceInput !== 'off';
+    const keyboard = show && (!canTalk || preferKeyboard);
+    voiceBox.hidden = !canTalk || keyboard;
+    writeForm.hidden = !keyboard;
+    voiceButton.hidden = !canTalk;
+  }
+
+  function openKeyboard() {
+    preferKeyboard = true;
+    showVoice(true);
+    textInput.focus();
+  }
+
+  keyboardButton.addEventListener('click', openKeyboard);
+  voiceButton.addEventListener('click', () => {
+    preferKeyboard = false;
+    showVoice(true);
+  });
+
+  writeForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    unlockAudio();
+    const text = textInput.value.trim();
+    if (!text) return;
+    textInput.value = '';
+    send({ text }, text);
+  });
 
   // ---------- Micrófono ----------
 
@@ -476,9 +729,10 @@
   function setRecordingUi(recording) {
     micButton.classList.toggle('recording', recording);
     micButton.setAttribute('aria-pressed', String(recording));
+    micIcon.setAttribute('href', recording ? '#i-stop' : '#i-mic');
     cancelButton.hidden = !recording;
+    keyboardButton.hidden = recording;
     micLabel.textContent = recording ? 'Te escucho… Tocá para enviar' : 'Tocá para hablar';
-    keyboardButton.hidden = recording || !writeForm.hidden;
   }
 
   function updateTimer() {
@@ -598,25 +852,6 @@
 
   cancelButton.addEventListener('click', () => stopRecording(true));
 
-  // ---------- Teclado ----------
-
-  function openKeyboard() {
-    writeForm.hidden = false;
-    keyboardButton.hidden = true;
-    textInput.focus();
-  }
-
-  keyboardButton.addEventListener('click', openKeyboard);
-
-  writeForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    unlockAudio();
-    const text = textInput.value.trim();
-    if (!text) return;
-    textInput.value = '';
-    send({ text }, text);
-  });
-
   // ---------- Diálogos y menú ----------
 
   function showDialog(text, buttons) {
@@ -640,14 +875,22 @@
     box.firstChild.focus();
   }
 
+  function openMenu() {
+    menu.hidden = false;
+    menuButton.setAttribute('aria-expanded', 'true');
+    menu.querySelector('[data-action="close"]').focus();
+  }
+
   function closeMenu() {
     menu.hidden = true;
     menuButton.setAttribute('aria-expanded', 'false');
+    menuButton.focus();
   }
 
-  menuButton.addEventListener('click', () => {
-    menu.hidden = !menu.hidden;
-    menuButton.setAttribute('aria-expanded', String(!menu.hidden));
+  menuButton.addEventListener('click', openMenu);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !menu.hidden) closeMenu();
   });
 
   window.addEventListener('beforeinstallprompt', (event) => {
@@ -657,11 +900,9 @@
   });
 
   const actions = {
-    'text-size': () => {
-      const size = nextSize();
-      showStatus(size === 'normal' ? 'Letra normal.' : `Letra ${size}.`);
-    },
+    close: closeMenu,
     install: () => {
+      closeMenu();
       if (installPrompt) {
         installPrompt.prompt();
         installPrompt = null;
@@ -675,6 +916,7 @@
       );
     },
     help: () => {
+      closeMenu();
       showDialog('¿Querés que una persona del equipo te escriba por WhatsApp?', [
         [
           'Sí, que me escriban',
@@ -685,53 +927,45 @@
       ]);
     },
     leave: () => {
+      closeMenu();
       showDialog(
         '¿Seguro que querés dejar el curso?\n\nVamos a borrar todos tus datos y este link va a dejar de funcionar.',
         [
           ['No, quiero seguir', 'primary'],
-          ['Sí, borrar mis datos', 'danger', () => send({ text: 'BAJA' }, 'Quiero dejar el curso')],
+          [
+            'Sí, borrar mis datos',
+            'danger-button',
+            () => send({ text: 'BAJA' }, 'Quiero dejar el curso'),
+          ],
         ],
       );
     },
   };
 
   menu.addEventListener('click', (event) => {
-    const target = event.target.closest('button[data-action]');
+    // Tocar afuera de la hoja la cierra.
+    if (event.target === menu) return closeMenu();
+    const target = event.target.closest('button');
     if (!target) return;
     unlockAudio();
-    closeMenu();
-    actions[target.dataset.action]();
+    if (target.dataset.size) {
+      storage.set('charla-letra', target.dataset.size);
+      return applySize(target.dataset.size);
+    }
+    if (target.dataset.action) actions[target.dataset.action]();
   });
 
   // ---------- Fin ----------
 
-  function endScreen(title, text) {
-    stopPlayback();
-    storage.remove(historyKey);
-    document.querySelector('.controls').hidden = true;
-    menuButton.hidden = true;
-    menu.hidden = true;
-    streakBox.hidden = true;
-    const main = $('main');
-    const heading = document.createElement('h1');
-    heading.textContent = title;
-    const paragraph = document.createElement('p');
-    paragraph.textContent = text;
-    const wrapper = document.createElement('div');
-    wrapper.className = 'gone';
-    wrapper.append(heading, paragraph);
-    main.replaceChildren(wrapper);
-  }
-
   function showFarewell() {
-    endScreen(
+    showEnd(
       '¡Gracias por haber sido parte de Charlá!',
       'Borramos tus datos. Ya podés cerrar esta página.',
     );
   }
 
   function showGone() {
-    endScreen(
+    showEnd(
       'Este link no funciona',
       'Si querés seguir con Charlá, pedile un link nuevo a la persona que te lo mandó.',
     );
@@ -749,7 +983,5 @@
     }
   });
 
-  history.forEach(renderBubble);
-  if (chat.lastChild) chat.lastChild.scrollIntoView({ block: 'end' });
   refreshState();
 })();

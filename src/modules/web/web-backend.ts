@@ -1,13 +1,14 @@
 import { eq } from 'drizzle-orm';
 import type { Orm } from '../../shared/db/database.js';
 import { pendingSignups } from '../../shared/db/schema.js';
-import type { LessonStatus } from '../conversation/conversation-service.js';
+import type { CourseProgress, LessonStatus } from '../conversation/conversation-service.js';
 import type {
   IncomingMessage,
   MessageRouter,
   RouterReply,
 } from '../conversation/message-router.js';
 import { DbEventRecorder, type EventRecorder } from '../metrics/product-events.js';
+import { loadConsentContent, WEB_CONSENT_FILE } from '../onboarding/consent-content.js';
 import { hashContact, webContact } from '../users/contact.js';
 import type { PhoneKeys } from '../users/phone.js';
 import { findUserByContact } from '../users/users.repository.js';
@@ -25,6 +26,9 @@ export interface WebState {
   phase: WebPhase;
   streak: number;
   lesson?: LessonStatus;
+  progress?: CourseProgress;
+  /** Solo en `consent`: el pedido de permiso, para mostrarlo aunque se haya recargado la página. */
+  consentText?: string;
 }
 
 export type WebMessage = Omit<IncomingMessage, 'contact'>;
@@ -43,11 +47,14 @@ export interface WebBackendDeps {
   keys: PhoneKeys;
   router: Pick<MessageRouter, 'handle' | 'conversation'>;
   events?: EventRecorder;
+  /** Por defecto, el pedido de `content/consentimiento-web.yaml`. */
+  consentText?: string;
 }
 
 export function createWebBackend(deps: WebBackendDeps): WebBackend {
   const { orm, keys, router } = deps;
   const events = deps.events ?? new DbEventRecorder(orm, 'web');
+  const consentText = deps.consentText ?? loadConsentContent(WEB_CONSENT_FILE).pedido;
 
   return {
     findParticipant: (token) => findParticipantByToken(orm, token),
@@ -62,7 +69,12 @@ export function createWebBackend(deps: WebBackendDeps): WebBackend {
           await events.record({ subjectId: user.id, type: 'app_opened', occurredAt: now });
         }
         const status = await router.conversation.status(user.id, now);
-        return { phase: 'active', streak: status.streak, lesson: status.lesson };
+        return {
+          phase: 'active',
+          streak: status.streak,
+          lesson: status.lesson,
+          progress: status.progress,
+        };
       }
 
       const [pending] = await orm
@@ -70,7 +82,9 @@ export function createWebBackend(deps: WebBackendDeps): WebBackend {
         .from(pendingSignups)
         .where(eq(pendingSignups.contactHash, hashContact(contact, keys)));
 
-      return { phase: pending ? 'consent' : 'welcome', streak: 0 };
+      return pending
+        ? { phase: 'consent', streak: 0, consentText }
+        : { phase: 'welcome', streak: 0 };
     },
 
     async handle(participant, message) {

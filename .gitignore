@@ -13,3 +13,7 @@ evals/resultados/
 
 # Audios generados por Charlá (caché). Se regeneran solos.
 var/
+
+# Presentaciones e informes: tienen nombres del equipo y el repositorio es público.
+*.pdf
+*.pptx

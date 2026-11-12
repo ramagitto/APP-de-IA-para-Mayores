@@ -45,6 +45,7 @@ const AUDIO_ID = /^[0-9a-f]{64}$/;
 const SECURITY_HEADERS = {
   'Content-Security-Policy':
     "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; " +
+    "font-src 'self'; " +
     "media-src 'self' blob: data:; connect-src 'self'; manifest-src 'self'; " +
     "base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
   // El link lleva el token: no se lo pasamos a ningún otro sitio.
@@ -61,7 +62,16 @@ const STATIC_FILES: Record<string, { type: string; body: () => Buffer | string }
   'icono-192.png': { type: 'image/png', body: () => appIconPng(192) },
   'icono-512.png': { type: 'image/png', body: () => appIconPng(512) },
   'apple-touch-icon.png': { type: 'image/png', body: () => appIconPng(180) },
+  // Fuentes servidas desde acá, sin Google: Atkinson Hyperlegible para leer (pensada para baja
+  // visión) y Source Serif 4 para los títulos, como en la presentación. Ambas con licencia OFL.
+  'atkinson-400.woff2': font('atkinson-hyperlegible/files/atkinson-hyperlegible-latin-400-normal'),
+  'atkinson-700.woff2': font('atkinson-hyperlegible/files/atkinson-hyperlegible-latin-700-normal'),
+  'serif-700.woff2': font('source-serif-4/files/source-serif-4-latin-700-normal'),
 };
+
+function font(path: string): { type: string; body: () => Buffer } {
+  return { type: 'font/woff2', body: () => readFileSync(`node_modules/@fontsource/${path}.woff2`) };
+}
 
 /** Interpreta un encabezado Range de un solo tramo, como "bytes=0-1" o "bytes=100-". */
 export function parseRange(
@@ -142,7 +152,10 @@ export function registerWebRoutes(app: FastifyInstance, deps: WebDeps): void {
     if (!file) return secure(reply).code(404).send({ error: 'No existe' });
 
     return secure(reply)
-      .header('Cache-Control', 'public, max-age=3600')
+      .header(
+        'Cache-Control',
+        `public, max-age=${file.type.startsWith('font/') ? 2_592_000 : 3600}`,
+      )
       .type(file.type)
       .send(file.body);
   });

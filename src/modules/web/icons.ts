@@ -1,34 +1,58 @@
 import { crc32, deflateSync } from 'node:zlib';
 
-// Ícono de la app: un globo de diálogo blanco con tres puntos, sobre el verde de Charlá. Se
-// dibuja en código para no guardar imágenes binarias en el repositorio.
-const GREEN: [number, number, number] = [0x0b, 0x5d, 0x3b];
-const WHITE: [number, number, number] = [0xff, 0xff, 0xff];
+// Ícono de la app: una persona que habla, en naranja sobre el verde petróleo de Charlá (los
+// colores de la presentación). Se dibuja en código para no guardar imágenes binarias en el
+// repositorio. Todo entra en la zona segura de los íconos "maskable".
+const TEAL: [number, number, number] = [0x0d, 0x4d, 0x46];
+const ORANGE: [number, number, number] = [0xf1, 0x8b, 0x38];
 
-export const APP_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-<rect width="100" height="100" fill="#0b5d3b"/>
-<ellipse cx="50" cy="46" rx="32" ry="26" fill="#fff"/>
-<polygon points="32,62 26,80 48,68" fill="#fff"/>
-<circle cx="38" cy="46" r="4.5" fill="#0b5d3b"/>
-<circle cx="50" cy="46" r="4.5" fill="#0b5d3b"/>
-<circle cx="62" cy="46" r="4.5" fill="#0b5d3b"/>
-</svg>`;
+// Medidas en un cuadro de 100 × 100: cabeza, hombros y dos ondas de voz.
+const HEAD = { cx: 45, cy: 36, r: 13 };
+const BODY = { cx: 45, cy: 78, rx: 22, ry: 17 };
+const WAVES = [22, 32];
+const WAVE_HALF_WIDTH = 2.75;
+const WAVE_ANGLE = (40 * Math.PI) / 180;
 
-function insideTriangle(x: number, y: number): boolean {
-  const [ax, ay, bx, by, cx, cy] = [0.32, 0.62, 0.26, 0.8, 0.48, 0.68];
-  const d1 = (x - bx) * (ay - by) - (ax - bx) * (y - by);
-  const d2 = (x - cx) * (by - cy) - (bx - cx) * (y - cy);
-  const d3 = (x - ax) * (cy - ay) - (cx - ax) * (y - ay);
-  const negative = d1 < 0 || d2 < 0 || d3 < 0;
-  const positive = d1 > 0 || d2 > 0 || d3 > 0;
-  return !(negative && positive);
+function waveEnds(radius: number): [number, number][] {
+  const dx = radius * Math.cos(WAVE_ANGLE);
+  const dy = radius * Math.sin(WAVE_ANGLE);
+  return [
+    [HEAD.cx + dx, HEAD.cy - dy],
+    [HEAD.cx + dx, HEAD.cy + dy],
+  ];
 }
 
-// Mismo dibujo que el SVG, en coordenadas de 0 a 1.
-function isWhite(x: number, y: number): boolean {
-  const inBubble = ((x - 0.5) / 0.32) ** 2 + ((y - 0.46) / 0.26) ** 2 <= 1;
-  const inDot = [0.38, 0.5, 0.62].some((dx) => (x - dx) ** 2 + (y - 0.46) ** 2 <= 0.045 ** 2);
-  return (inBubble || insideTriangle(x, y)) && !inDot;
+const round = (value: number) => Math.round(value * 100) / 100;
+
+export const APP_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<rect width="100" height="100" fill="#0d4d46"/>
+<g fill="#f18b38">
+<circle cx="${HEAD.cx}" cy="${HEAD.cy}" r="${HEAD.r}"/>
+<path d="M${BODY.cx - BODY.rx} ${BODY.cy}a${BODY.rx} ${BODY.ry} 0 0 1 ${BODY.rx * 2} 0z"/>
+</g>
+<g fill="none" stroke="#f18b38" stroke-width="${WAVE_HALF_WIDTH * 2}" stroke-linecap="round">
+${WAVES.map((radius) => {
+  const [[x1, y1], [x2, y2]] = waveEnds(radius) as [[number, number], [number, number]];
+  return `<path d="M${round(x1)} ${round(y1)}A${radius} ${radius} 0 0 1 ${round(x2)} ${round(y2)}"/>`;
+}).join('\n')}
+</g>
+</svg>`;
+
+// Mismo dibujo que el SVG, en coordenadas de 0 a 100.
+function isOrange(x: number, y: number): boolean {
+  if ((x - HEAD.cx) ** 2 + (y - HEAD.cy) ** 2 <= HEAD.r ** 2) return true;
+  if (y <= BODY.cy && ((x - BODY.cx) / BODY.rx) ** 2 + ((y - BODY.cy) / BODY.ry) ** 2 <= 1) {
+    return true;
+  }
+
+  const distance = Math.hypot(x - HEAD.cx, y - HEAD.cy);
+  const angle = Math.atan2(y - HEAD.cy, x - HEAD.cx);
+  return WAVES.some(
+    (radius) =>
+      (Math.abs(distance - radius) <= WAVE_HALF_WIDTH && Math.abs(angle) <= WAVE_ANGLE) ||
+      // Puntas redondeadas.
+      waveEnds(radius).some(([ex, ey]) => (x - ex) ** 2 + (y - ey) ** 2 <= WAVE_HALF_WIDTH ** 2),
+  );
 }
 
 function chunk(type: string, data: Buffer): Buffer {
@@ -52,18 +76,18 @@ export function appIconPng(size: number): Buffer {
   for (let py = 0; py < size; py++) {
     const row = Buffer.alloc(1 + size * 3);
     for (let px = 0; px < size; px++) {
-      let white = 0;
+      let orange = 0;
       for (let sy = 0; sy < samples; sy++) {
         for (let sx = 0; sx < samples; sx++) {
           const x = (px + (sx + 0.5) / samples) / size;
           const y = (py + (sy + 0.5) / samples) / size;
-          if (isWhite(x, y)) white++;
+          if (isOrange(x * 100, y * 100)) orange++;
         }
       }
-      const share = white / samples ** 2;
+      const share = orange / samples ** 2;
       for (let channel = 0; channel < 3; channel++) {
         row[1 + px * 3 + channel] = Math.round(
-          GREEN[channel]! * (1 - share) + WHITE[channel]! * share,
+          TEAL[channel]! * (1 - share) + ORANGE[channel]! * share,
         );
       }
     }

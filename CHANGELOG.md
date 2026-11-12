@@ -4,6 +4,18 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ## [Sin publicar]
 
+### Rediseño del frontend
+
+De chat a curso ([ADR 0013](docs/adr/0013-rediseno-del-frontend.md)), a partir del [diagnóstico](docs/diagnostico-frontend.md).
+
+#### Cambiado
+
+- Una pantalla por momento: bienvenida, permiso, inicio con la lección del día y el avance, lección, festejo al terminar y despedida.
+- Colores, logo e ícono de la presentación. Letra Atkinson Hyperlegible y títulos en Source Serif 4, servidas desde el propio servidor. Íconos SVG en lugar de emojis. Modo oscuro más sobrio.
+- Una sola acción principal por paso. Los mensajes nuevos se ven desde su primera línea. Menú como hoja que sube desde abajo, con selector de tamaño de letra.
+- Textos del alta para la web (`web-v2-borrador`): nombran los botones reales y no las palabras de WhatsApp.
+- El estado de la web suma el avance del curso, el número de lección y el texto del permiso.
+
 ### Piloto web
 
 Cambio de rumbo: el piloto va por la web, con un link personal, en lugar de WhatsApp Business ([ADR 0011](docs/adr/0011-piloto-web.md)). Hecho en una sesión autónoma; las decisiones tomadas sin el equipo están en `docs/decisiones-pendientes.md` (números 53 a 72).
