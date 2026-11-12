@@ -198,3 +198,48 @@ export const outboundMessages = pgTable(
     uniqueIndex('outbound_messages_event_position').on(table.inboundEventId, table.position),
   ],
 );
+
+// Participantes del piloto web. Cada uno entra con un link personal que lleva un token: se
+// guarda el hash, para buscarlo, y el token cifrado, para volver a armar el link del
+// recordatorio. El código (P01, P02...) es lo único que ve el equipo: la relación entre el
+// código y la persona queda fuera del sistema. Nada de nombres ni teléfonos.
+// Con la BAJA, el token se borra y la fila queda cerrada: así el código no se reutiliza.
+export const webParticipants = pgTable('web_participants', {
+  id: uuid().primaryKey().defaultRandom(),
+  code: text().notNull().unique(),
+  tokenHash: text('token_hash').unique(),
+  tokenEncrypted: text('token_encrypted'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
+  closedAt: timestamp('closed_at', { withTimezone: true }),
+});
+
+export const productEventType = pgEnum('product_event_type', [
+  'signup',
+  'app_opened',
+  'lesson_started',
+  'lesson_completed',
+  'help_requested',
+  'care_message',
+  'unsubscribed',
+]);
+
+// Eventos para las métricas del piloto. El sujeto es el id de la persona, pero sin clave
+// foránea: si pide la BAJA, sus datos se borran y estos eventos quedan anónimos, porque ese id
+// ya no se puede relacionar con nadie. Así la retención cuenta también a quien se fue.
+export const productEvents = pgTable(
+  'product_events',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    subjectId: uuid('subject_id').notNull(),
+    channel: text().notNull(),
+    type: productEventType().notNull(),
+    lessonId: text('lesson_id'),
+    trigger: lessonTrigger(),
+    occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index('product_events_subject').on(table.subjectId, table.occurredAt),
+    index('product_events_type').on(table.type, table.occurredAt),
+  ],
+);

@@ -29,6 +29,13 @@
       "when": 1794317977385,
       "tag": "0003_entrega_whatsapp",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794320083543,
+      "tag": "0004_piloto_web",
+      "breakpoints": true
     }
   ]
 }
