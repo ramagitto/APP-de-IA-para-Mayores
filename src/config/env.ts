@@ -32,6 +32,8 @@ const voiceShape = {
     .regex(/^[a-z0-9]+$/, 'Una región de Azure, por ejemplo eastus')
     .optional(),
   TTS_VOICE: z.string().min(1).default('es-AR-ElenaNeural'),
+  // ogg: nota de voz de WhatsApp. mp3: la web, porque el iPhone recién reproduce OGG desde iOS 18.4.
+  TTS_AUDIO_FORMAT: z.enum(['ogg', 'mp3']).default('ogg'),
   AUDIO_CACHE_DIR: z.string().min(1).default('var/audio'),
 };
 
@@ -96,6 +98,11 @@ const envSchema = z
     DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
     PHONE_ENCRYPTION_KEY: secretKey.optional(),
     PHONE_HASH_KEY: secretKey.optional(),
+    // Dirección pública de la app, sin barra final: con ella se arman los links personales.
+    PUBLIC_BASE_URL: z
+      .url({ protocol: /^https?$/ })
+      .transform((url) => url.replace(/\/+$/, ''))
+      .default('http://localhost:3000'),
     ...tutorShape,
     ...voiceShape,
     ...whatsappShape,
@@ -118,6 +125,15 @@ const envSchema = z
         context.addIssue({ code: 'custom', path: [key], message: 'Obligatoria fuera de local' });
       }
     }
+
+    // Sin HTTPS, el celular no deja usar el micrófono y el link personal viajaría sin cifrar.
+    if (!env.PUBLIC_BASE_URL.startsWith('https://')) {
+      context.addIssue({
+        code: 'custom',
+        path: ['PUBLIC_BASE_URL'],
+        message: 'Fuera de local tiene que empezar con https://',
+      });
+    }
   })
   .transform((env) => ({
     ...env,
@@ -129,8 +145,10 @@ export type Env = z.infer<typeof envSchema>;
 export type TutorEnv = z.infer<typeof tutorEnvSchema>;
 
 // Los mensajes de error nombran la variable, pero nunca muestran su valor, porque puede ser un secreto.
+// Una variable vacía cuenta como no definida: los paneles de hosting suelen guardarlas así.
 function parseWith<T>(schema: z.ZodType<T>, source: Record<string, string | undefined>): T {
-  const result = schema.safeParse(source);
+  const defined = Object.fromEntries(Object.entries(source).filter(([, value]) => value !== ''));
+  const result = schema.safeParse(defined);
 
   if (!result.success) {
     const invalid = result.error.issues.map((issue) => issue.path.join('.')).join(', ');
@@ -148,9 +166,15 @@ export function parseTutorEnv(source: Record<string, string | undefined>): Tutor
   return parseWith(tutorEnvSchema, source);
 }
 
+// Con CHARLA_ENV_FILE, los comandos del piloto corren contra producción con otro archivo (por
+// ejemplo, .env.produccion), sin tocar el .env de desarrollo.
 function loadEnvFile(): void {
-  if (existsSync('.env')) {
-    process.loadEnvFile('.env');
+  const file = process.env.CHARLA_ENV_FILE ?? '.env';
+
+  if (existsSync(file)) {
+    process.loadEnvFile(file);
+  } else if (process.env.CHARLA_ENV_FILE) {
+    throw new Error(`No existe el archivo de variables ${file}`);
   }
 }
 

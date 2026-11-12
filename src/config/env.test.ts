@@ -49,9 +49,30 @@ describe('parseEnv', () => {
       APP_ENV: 'production',
       PHONE_ENCRYPTION_KEY: validKey,
       PHONE_HASH_KEY: validKey,
+      PUBLIC_BASE_URL: 'https://charla.example.org/',
     });
 
     expect(env.PHONE_ENCRYPTION_KEY).toBe(validKey);
+    expect(env.PUBLIC_BASE_URL).toBe('https://charla.example.org');
+  });
+
+  it('exige HTTPS en la dirección pública fuera de local', () => {
+    expect(() =>
+      parseEnv({
+        DATABASE_URL: databaseUrl,
+        APP_ENV: 'production',
+        PHONE_ENCRYPTION_KEY: validKey,
+        PHONE_HASH_KEY: validKey,
+        PUBLIC_BASE_URL: 'http://charla.example.org',
+      }),
+    ).toThrow('PUBLIC_BASE_URL');
+  });
+
+  it('en local, los links apuntan a localhost y el audio es OGG', () => {
+    expect(parseEnv({ DATABASE_URL: databaseUrl })).toMatchObject({
+      PUBLIC_BASE_URL: 'http://localhost:3000',
+      TTS_AUDIO_FORMAT: 'ogg',
+    });
   });
 
   it('usa el proveedor simulado por defecto', () => {
@@ -124,6 +145,13 @@ describe('parseEnv', () => {
         WHATSAPP_VERIFY_TOKEN: 'b',
       }),
     ).toThrow('WHATSAPP_PROVIDER');
+  });
+
+  it('una variable vacía cuenta como no definida', () => {
+    const env = parseEnv({ DATABASE_URL: databaseUrl, ANTHROPIC_API_KEY: '', PORT: '' });
+
+    expect(env.ANTHROPIC_API_KEY).toBeUndefined();
+    expect(env.PORT).toBe(3000);
   });
 
   it('rechaza una clave de largo incorrecto', () => {
