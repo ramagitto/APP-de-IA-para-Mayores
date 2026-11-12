@@ -65,15 +65,17 @@ El detalle de la última sesión está en [resumen-sesion.md](resumen-sesion.md)
 Todo lo pendiente, con prioridad y responsable, está en **[estado.md](estado.md)**. Lo más urgente al 12/11/2026:
 
 <<<<<<< HEAD
+
 1. Revisar y mergear el PR #8.
 2. Diagnóstico y mini plan del rediseño del frontend.
 3. Probar el link de P00 en un Android y un iPhone.
-=======
-1. Anular la clave de API de Render que pasó por el chat.
-2. Revisar y mergear el PR #8.
-3. Diagnóstico y mini plan del rediseño del frontend.
-4. Probar el link de P00 en un Android y un iPhone.
->>>>>>> 5cc04256a0766c503469253c660c042c8731e712
+   \=======
+4. Anular la clave de API de Render que pasó por el chat.
+5. Revisar y mergear el PR #8.
+6. Diagnóstico y mini plan del rediseño del frontend.
+7. Probar el link de P00 en un Android y un iPhone.
+
+> > > > > > > 5cc04256a0766c503469253c660c042c8731e712
 
 ## 6. Lo que sigue
 
