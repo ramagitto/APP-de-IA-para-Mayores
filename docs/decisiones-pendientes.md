@@ -1,10 +1,14 @@
 # Decisiones tomadas sin el OK del equipo
 
-Durante la sesión autónoma del 10/11/2026, Claude tomó estas decisiones sin consultar, eligiendo en cada caso la opción más razonable y simple. **Cada una se puede revertir.**
+Durante las sesiones autónomas del 10 al 12/11/2026, Claude tomó estas decisiones sin consultar, eligiendo en cada caso la opción más razonable y simple. **Cada una se puede revertir.**
 
 Las importantes también tienen ADR.
 
-## Estado al 10/11/2026
+## Estado al 12/11/2026
+
+- **Decisiones 1 a 33:** aprobadas como están. **De la 34 a la 72:** pendientes de revisión, sobre todo la 53, la 60, la 61 y la 62. El seguimiento está en [estado.md](estado.md).
+
+Lo que sigue es el estado de las primeras decisiones, al 10/11/2026.
 
 - **Aprobadas por el equipo:** la 2 (mensajes de cuidado fuera del tope) y la 4, resuelta (se suman las líneas de ayuda, ver abajo).
 - **En borrador hasta su revisión:** la 5. Los mensajes de cuidado los revisan el equipo y una persona con formación en psicología antes del piloto. En el código están marcados con `CARE_MESSAGES_REVIEW = 'borrador'`, y `npm run lessons:check` lo avisa.
@@ -112,7 +116,7 @@ Todas pendientes de revisión. El cambio de rumbo (piloto por la web, Fase 4 gua
 
 ## Lo que quedó sin hacer
 
-- **Fase 1:** está completa en lo técnico (PR #2), pero falta la revisión de las 10 lecciones por el rol de contenidos y tu OK para mergear. No mergeé nada.
+- **Fase 1:** mergeada en `main` (PR #2). Falta la revisión de las 10 lecciones por el rol de contenidos.
 - **Probar el tutor con un modelo real:** hace falta crear una cuenta y una clave de Anthropic. Con la clave en el `.env` y `LLM_PROVIDER=anthropic`, `npm run evals` mide comportamiento y costo reales.
 - **Probar la voz real:** hacen falta claves de OpenAI (`STT_PROVIDER=openai`) y de Azure (`TTS_PROVIDER=azure`).
 - **Comparar proveedores:** hacen falta cuentas en OpenAI y Google.

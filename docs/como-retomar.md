@@ -6,25 +6,26 @@ Guía para seguir Charlá en un chat nuevo de Claude Code, o desde otra PC. Esta
 
 ```text
 Sigo el proyecto Charlá en un chat nuevo. Antes de hacer nada:
-1. Leé docs/como-retomar.md, CLAUDE.md, docs/plan-de-fases.md y docs/resumen-sesion.md.
+1. Leé docs/como-retomar.md, CLAUDE.md, docs/estado.md, docs/plan-de-fases.md y docs/resumen-sesion.md.
 2. Revisá el estado del repo, de los PR abiertos y de la CI con gh.
-3. Decime en pocas líneas dónde estamos y qué está pendiente de mi parte para el piloto web.
+3. Decime en pocas líneas dónde estamos y qué está pendiente de mi parte para el piloto web (sale de docs/estado.md).
 No escribas código ni mergees nada hasta que te dé el OK.
 ```
 
-`CLAUDE.md` se carga solo en cada chat: ahí están las reglas del proyecto. Este documento agrega el estado y lo que no está en el código.
+`CLAUDE.md` se carga solo en cada chat: ahí están las reglas del proyecto. Este documento agrega cómo trabajamos y lo que no está en el código. **La lista de pendientes vive en [estado.md](estado.md).**
 
 ## 2. Dónde quedamos
 
 **Cambio de rumbo (12/11/2026):** el piloto va por la web, con un link personal, y no por WhatsApp Business ([ADR 0011](adr/0011-piloto-web.md)).
 
-| Parte                            | Estado                                                     | Dónde                                     |
-| -------------------------------- | ---------------------------------------------------------- | ----------------------------------------- |
-| 0 a 3                            | Mergeadas                                                  | `main`                                    |
-| 4. WhatsApp, alta, BAJA y AYUDA  | Hecha y guardada para después, apagada                     | `main` (PR #5, mergeado el 11/11)         |
-| **Piloto web**                   | **Hecho.** Falta publicarlo y probarlo en celulares reales | `main` y [checklist](checklist-piloto.md) |
-| 5. Programación y notificaciones | En pausa                                                   | —                                         |
-| 6 a 8                            | Pendientes                                                 | [plan-de-fases.md](plan-de-fases.md)      |
+| Parte                            | Estado                                                                                   | Dónde                                                                                                      |
+| -------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 0 a 3                            | Mergeadas                                                                                | `main`                                                                                                     |
+| 4. WhatsApp, alta, BAJA y AYUDA  | Hecha y guardada para después, apagada                                                   | `main` (PR #5, mergeado el 11/11)                                                                          |
+| **Piloto web**                   | **Hecho y publicado** gratis, con IA y voz simuladas. Falta probarlo en celulares reales | <https://charla-piloto.onrender.com> y [PR #8](https://github.com/ramagitto/APP-de-IA-para-Mayores/pull/8) |
+| **Rediseño del frontend**        | **Nuevo (12/11).** Falta el diagnóstico y el mini plan                                   | [estado.md](estado.md)                                                                                     |
+| 5. Programación y notificaciones | En pausa                                                                                 | —                                                                                                          |
+| 6 a 8                            | Pendientes                                                                               | [plan-de-fases.md](plan-de-fases.md)                                                                       |
 
 El detalle de la última sesión está en [resumen-sesion.md](resumen-sesion.md).
 
@@ -59,16 +60,14 @@ El detalle de la última sesión está en [resumen-sesion.md](resumen-sesion.md)
 - **Consentimiento primero (decisión 26):** nadie se crea sin un ACEPTO explícito.
 - **Decisiones 1 a 33:** aprobadas como están. **De la 34 a la 52** (Fase 4): pendientes de revisión.
 
-## 5. Lo que está pendiente de la persona responsable
+## 5. Lo que está pendiente
 
-1. **Publicar la app** con la [checklist del piloto](checklist-piloto.md), secciones 2 a 4: Neon, Render, claves con tope de gasto y prueba en un Android y un iPhone.
-2. **Hacer revisar textos en borrador:**
-   - las 10 lecciones y los recordatorios, por el rol de contenidos;
-   - los mensajes de cuidado, por el equipo y una persona con formación en psicología;
-   - el consentimiento web, por alguien con formación legal.
-3. **Revisar las decisiones 34 a 72** en [decisiones-pendientes.md](decisiones-pendientes.md). Las más importantes del piloto web: 53, 60, 61 y 62.
-4. **Armar la planilla privada** código-persona-teléfono y definir quién atiende AYUDA.
-5. **Anotar las horas reales** en [horas.md](horas.md).
+Todo lo pendiente, con prioridad y responsable, está en **[estado.md](estado.md)**. Lo más urgente al 12/11/2026:
+
+1. Anular la clave de API de Render que pasó por el chat.
+2. Revisar y mergear el PR #8.
+3. Diagnóstico y mini plan del rediseño del frontend.
+4. Probar el link de P00 en un Android y un iPhone.
 
 ## 6. Lo que sigue
 
@@ -111,6 +110,7 @@ Después, `npm run check` y `npm run test:integration`, con Docker abierto.
 
 | Documento                                            | Para qué                                                                    |
 | ---------------------------------------------------- | --------------------------------------------------------------------------- |
+| [estado.md](estado.md)                               | **Tablero de avance: qué está hecho y qué falta**                           |
 | [CLAUDE.md](../CLAUDE.md)                            | Reglas, comandos y decisiones vigentes                                      |
 | [plan-de-fases.md](plan-de-fases.md)                 | Qué falta, con criterios de aceptación                                      |
 | [resumen-sesion.md](resumen-sesion.md)               | Qué se hizo en la última sesión                                             |

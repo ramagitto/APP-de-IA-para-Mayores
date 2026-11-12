@@ -39,14 +39,15 @@ Charlá enseña a personas de 65 años o más a usar la IA para resolver cosas d
 
 ## Estado de las fases
 
-| Fase            | Estado                                                                                             |
-| --------------- | -------------------------------------------------------------------------------------------------- |
-| 0. Esqueleto    | Terminada                                                                                          |
-| 1 a 3           | Mergeadas en `main`                                                                                |
-| 4. WhatsApp     | Mergeada (PR #5, 11/11) y guardada para después, apagada (`WHATSAPP_PROVIDER=disabled`)            |
-| **Piloto web**  | **Hecho** el 12/11/2026, en sesión autónoma. Ver abajo y `docs/resumen-sesion.md`                  |
-| 5. Programación | **En pausa:** los recordatorios los manda el equipo a mano. La limpieza programada queda pendiente |
-| 6 a 8           | Pendientes. La 7 (métricas) quedó en buena parte hecha con el piloto web                           |
+| Fase                      | Estado                                                                                             |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| 0. Esqueleto              | Terminada                                                                                          |
+| 1 a 3                     | Mergeadas en `main`                                                                                |
+| 4. WhatsApp               | Mergeada (PR #5, 11/11) y guardada para después, apagada (`WHATSAPP_PROVIDER=disabled`)            |
+| **Piloto web**            | **Hecho** el 12/11/2026, en sesión autónoma. Ver abajo y `docs/resumen-sesion.md`                  |
+| **Rediseño del frontend** | **Nuevo (12/11/2026).** Falta el diagnóstico de la app y el mini plan, antes de dar los links      |
+| 5. Programación           | **En pausa:** los recordatorios los manda el equipo a mano. La limpieza programada queda pendiente |
+| 6 a 8                     | Pendientes. La 7 (métricas) quedó en buena parte hecha con el piloto web                           |
 
 **Cambio de rumbo (12/11/2026):** el piloto no va a ser por WhatsApp Business sino por la web, con un link personal ([ADR 0011](adr/0011-piloto-web.md)). Lo que sigue de este documento se escribió para WhatsApp: vale para cuando se retome.
 
