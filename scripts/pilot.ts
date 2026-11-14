@@ -6,6 +6,9 @@
 //                                              texto del día para mandar a mano por WhatsApp
 //   npm run pilot -- nuevo-link <código>      cambia el link (el viejo deja de andar)
 //   npm run pilot -- baja <código>            borra los datos, si la persona lo pide por otra vía
+//   npm run pilot -- demo                     crea un participante demo (D01...) para presentaciones:
+//                                              sin espera entre lecciones, con atajos en el Menú y
+//                                              fuera de las métricas y los recordatorios
 // Contra producción: CHARLA_ENV_FILE=.env.produccion npm run pilot -- listar
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { buildServices } from '../src/composition.js';
@@ -32,7 +35,12 @@ const env = loadEnv();
 const database = createDatabase(env.DATABASE_URL);
 const services = buildServices(env, createOrm(database));
 const { orm, keys } = services;
-const backend = createWebBackend({ orm, keys, router: services.webRouter });
+const backend = createWebBackend({
+  orm,
+  keys,
+  router: services.webRouter,
+  demo: services.demo,
+});
 const [command, argument, ...flags] = process.argv.slice(2);
 const link = (token: string) => participantLink(env.PUBLIC_BASE_URL, token);
 const PHASES = { welcome: 'Todavía no entró', consent: 'Falta que acepte', active: 'Activo' };
@@ -48,6 +56,15 @@ async function create(count: number): Promise<void> {
     `Creé ${created.length} participante(s). Anotá en tu planilla a quién le das cada link:\n`,
   );
   for (const participant of created) console.log(`${participant.code}  ${link(participant.token)}`);
+}
+
+async function createDemo(): Promise<void> {
+  const [created] = await createParticipants(orm, keys, 1, new Date(), { demo: true });
+  if (!created) throw new Error('No se pudo crear el participante demo.');
+  console.log(
+    `Creé el participante demo ${created.code}. Es solo para presentaciones: no cuenta en las ` +
+      `métricas ni recibe recordatorios.\n\n${link(created.token)}`,
+  );
 }
 
 async function list(): Promise<void> {
@@ -73,7 +90,7 @@ async function list(): Promise<void> {
               ? 'terminó todo'
               : '';
     console.log(
-      `${participant.code}  ${PHASES[state.phase]}${lesson ? `, ${lesson}` : ''}. Racha: ${state.streak}. ` +
+      `${participant.code}${participant.demo ? ' (demo)' : ''}  ${PHASES[state.phase]}${lesson ? `, ${lesson}` : ''}. Racha: ${state.streak}. ` +
         `Último ingreso: ${formatDate(participant.lastSeenAt)}\n      ${link(participant.token)}`,
     );
   }
@@ -104,6 +121,7 @@ async function reminders(dayArgument: string | undefined, force: boolean): Promi
     const open = participant.token && !participant.closedAt;
     inputs.push({
       code: participant.code,
+      demo: participant.demo,
       link: open ? link(participant.token!) : null,
       state: open ? await backend.state(participant, now) : null,
     });
@@ -147,9 +165,10 @@ try {
     await reminders(day, [argument, ...flags].includes('--forzar'));
   } else if (command === 'nuevo-link') await newLink(argument);
   else if (command === 'baja') await unsubscribe(argument);
+  else if (command === 'demo') await createDemo();
   else {
     console.log(
-      'Usá: npm run pilot -- crear <cantidad> | listar | recordatorios [AAAA-MM-DD] [--forzar] | nuevo-link <código> | baja <código>',
+      'Usá: npm run pilot -- crear <cantidad> | listar | recordatorios [AAAA-MM-DD] [--forzar] | nuevo-link <código> | baja <código> | demo',
     );
   }
 } catch (error) {

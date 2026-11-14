@@ -37,7 +37,8 @@
   const menu = $('menu');
   const menuButton = $('menu-button');
 
-  const SCREENS = ['welcome', 'consent', 'home', 'lesson', 'done', 'end'];
+  // 'sponsor' existe solo en la página de un participante demo.
+  const SCREENS = ['welcome', 'consent', 'home', 'lesson', 'done', 'end', 'sponsor'];
 
   // Etiqueta e ícono de cada tipo de mensaje de Charlá. Los demás van sin etiqueta.
   const LABELS = {
@@ -135,7 +136,10 @@
   function show(name) {
     screen = name;
     $('loading').hidden = true;
-    for (const each of SCREENS) $(`screen-${each}`).hidden = each !== name;
+    for (const each of SCREENS) {
+      const node = $(`screen-${each}`);
+      if (node) node.hidden = each !== name;
+    }
     controls.hidden = name === 'end';
     showStatus('');
     if (name !== 'lesson') window.scrollTo(0, 0);
@@ -563,11 +567,12 @@
     }
     if (response.status === 429)
       throw new Error('Mandaste muchos mensajes seguidos. Esperá un minutito.');
+    if (response.status === 409) throw new Error((await response.json()).error || '');
     if (!response.ok) throw new Error('');
     return response.json();
   }
 
-  async function send(payload, shownText) {
+  async function send(payload, shownText, path) {
     if (busy) return;
     busy = true;
     setEnabled(false);
@@ -586,7 +591,10 @@
     );
 
     try {
-      const data = await request('/mensajes', { method: 'POST', body: JSON.stringify(payload) });
+      const data = await request(path || '/mensajes', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
       hideThinking();
 
       if (payload.audio) {
@@ -618,7 +626,7 @@
         error.message || 'No me llegó tu mensaje. Revisá que tengas internet y probá de nuevo.',
         true,
       );
-      offerRetry(payload);
+      offerRetry(payload, path);
     } finally {
       clearTimeout(slow);
       busy = false;
@@ -626,10 +634,10 @@
     }
   }
 
-  function offerRetry(payload) {
+  function offerRetry(payload, path) {
     const retry = button('Probar de nuevo', 'primary', () => {
       unlockAudio();
-      send(payload);
+      send(payload, undefined, path);
     });
     choices.replaceChildren(retry);
     controls.hidden = false;
@@ -954,6 +962,76 @@
     }
     if (target.dataset.action) actions[target.dataset.action]();
   });
+
+  // ---------- Modo demo ----------
+  // Solo hace algo en la página de un participante demo: los botones y la pantalla del padrino
+  // existen únicamente ahí, y el servidor rechaza estos pedidos para cualquier otro link.
+
+  const demoLessons = $('demo-lessons');
+
+  // Corre un atajo: la conversación anterior se borra y se muestra la pantalla que corresponda.
+  function demoAction(action, lessonId) {
+    closeMenu();
+    if (demoLessons) demoLessons.hidden = true;
+    unlockAudio();
+    history = [];
+    storage.remove(historyKey);
+    screen = null;
+    send({ action, lessonId }, undefined, '/demo');
+  }
+
+  function needsConsent() {
+    if (state && state.phase === 'active') return false;
+    closeMenu();
+    showDialog(
+      'Primero tocá «Empezar» y después «Acepto». Los atajos funcionan después del permiso.',
+      [['Entendido', 'primary']],
+    );
+    return true;
+  }
+
+  if (demoLessons) {
+    Object.assign(actions, {
+      'demo-lessons': () => {
+        if (needsConsent()) return;
+        closeMenu();
+        const lessons = (state && state.demo && state.demo.lessons) || [];
+        $('demo-lesson-list').replaceChildren(
+          ...lessons.map((lesson) =>
+            button(
+              `${lesson.number}. ${lesson.title}${lesson.antiscam ? ' (antiestafas)' : ''}`,
+              'menu-item',
+              () => demoAction('lesson', lesson.id),
+            ),
+          ),
+        );
+        demoLessons.hidden = false;
+      },
+      'demo-restart': () => {
+        closeMenu();
+        showDialog('¿Volver a empezar desde el permiso? Se borra el avance de este demo.', [
+          ['Sí, volver a empezar', 'primary', () => demoAction('restart')],
+          ['No'],
+        ]);
+      },
+      'demo-antiscam': () => needsConsent() || demoAction('antiscam'),
+      'demo-challenge': () => needsConsent() || demoAction('challenge'),
+      'demo-progress': () => needsConsent() || demoAction('progress'),
+      'demo-end': () => needsConsent() || demoAction('end'),
+      'demo-sponsor': () => {
+        closeMenu();
+        stopPlayback();
+        show('sponsor');
+        setControls([button('Volver a la app', 'primary', () => refreshState())]);
+      },
+    });
+
+    demoLessons.addEventListener('click', (event) => {
+      if (event.target === demoLessons || event.target.closest('[data-close]')) {
+        demoLessons.hidden = true;
+      }
+    });
+  }
 
   // ---------- Fin ----------
 

@@ -21,14 +21,23 @@ export function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
 
-export function participantCode(number: number): string {
-  return `P${String(number).padStart(2, '0')}`;
+// P01, P02... para el piloto; D01, D02... para los participantes demo (presentaciones).
+export function participantCode(number: number, demo = false): string {
+  return `${demo ? 'D' : 'P'}${String(number).padStart(2, '0')}`;
 }
 
 export interface Participant {
   id: string;
   code: string;
+  /** Participante para presentaciones. Se fija al crearlo; ninguna ruta lo cambia. */
+  demo: boolean;
 }
+
+const participantColumns = {
+  id: webParticipants.id,
+  code: webParticipants.code,
+  demo: webParticipants.demo,
+};
 
 export interface ParticipantWithLink extends Participant {
   /** Null si la persona pidió la BAJA: ya no tiene link. */
@@ -48,9 +57,17 @@ export async function createParticipants(
   keys: PhoneKeys,
   count: number,
   now: Date,
+  options: { demo?: boolean } = {},
 ): Promise<(Participant & { token: string })[]> {
+  const demo = options.demo ?? false;
+  const prefix = demo ? 'D' : 'P';
   const existing = await orm.select({ code: webParticipants.code }).from(webParticipants);
-  let last = Math.max(0, ...existing.map(({ code }) => Number(code.slice(1)) || 0));
+  let last = Math.max(
+    0,
+    ...existing
+      .filter(({ code }) => code.startsWith(prefix))
+      .map(({ code }) => Number(code.slice(1)) || 0),
+  );
   const created: (Participant & { token: string })[] = [];
 
   for (let index = 0; index < count; index++) {
@@ -58,12 +75,13 @@ export async function createParticipants(
     const [row] = await orm
       .insert(webParticipants)
       .values({
-        code: participantCode(++last),
+        code: participantCode(++last, demo),
+        demo,
         tokenHash: hashToken(token),
         tokenEncrypted: encryptText(token, keys),
         createdAt: now,
       })
-      .returning({ id: webParticipants.id, code: webParticipants.code });
+      .returning(participantColumns);
 
     if (!row) throw new Error('No se pudo crear el participante');
     created.push({ ...row, token });
@@ -79,7 +97,7 @@ export async function findParticipantByToken(
   if (!isWellFormedToken(token)) return undefined;
 
   const [row] = await orm
-    .select({ id: webParticipants.id, code: webParticipants.code })
+    .select(participantColumns)
     .from(webParticipants)
     .where(and(eq(webParticipants.tokenHash, hashToken(token)), isNull(webParticipants.closedAt)));
 
@@ -91,7 +109,7 @@ export async function findParticipantByCode(
   code: string,
 ): Promise<Participant | undefined> {
   const [row] = await orm
-    .select({ id: webParticipants.id, code: webParticipants.code })
+    .select(participantColumns)
     .from(webParticipants)
     .where(eq(webParticipants.code, code.trim().toUpperCase()));
 
@@ -101,16 +119,23 @@ export async function findParticipantByCode(
 export async function listParticipants(orm: Orm, keys: PhoneKeys): Promise<ParticipantWithLink[]> {
   const rows = await orm.select().from(webParticipants).orderBy(asc(webParticipants.createdAt));
 
-  return rows
-    .map((row) => ({
-      id: row.id,
-      code: row.code,
-      token: row.tokenEncrypted ? decryptText(row.tokenEncrypted, keys) : null,
-      createdAt: row.createdAt,
-      lastSeenAt: row.lastSeenAt,
-      closedAt: row.closedAt,
-    }))
-    .sort((a, b) => Number(a.code.slice(1)) - Number(b.code.slice(1)));
+  return (
+    rows
+      .map((row) => ({
+        id: row.id,
+        code: row.code,
+        demo: row.demo,
+        token: row.tokenEncrypted ? decryptText(row.tokenEncrypted, keys) : null,
+        createdAt: row.createdAt,
+        lastSeenAt: row.lastSeenAt,
+        closedAt: row.closedAt,
+      }))
+      // Primero el piloto, después los demo.
+      .sort(
+        (a, b) =>
+          Number(a.demo) - Number(b.demo) || Number(a.code.slice(1)) - Number(b.code.slice(1)),
+      )
+  );
 }
 
 export async function markSeen(orm: Orm, participantId: string, now: Date): Promise<void> {

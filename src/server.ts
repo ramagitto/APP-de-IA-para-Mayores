@@ -24,6 +24,7 @@ const app = buildApp({
       orm: services.orm,
       keys: services.keys,
       router: services.webRouter,
+      demo: services.demo,
     }),
     audioStore: services.audioStore,
     audioMimeType: services.voice.audioMimeType,
