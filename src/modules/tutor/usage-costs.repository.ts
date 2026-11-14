@@ -7,7 +7,11 @@ import type { CostEntry, CostLedger } from './cost-ledger.js';
 const MICROS_PER_USD = 1_000_000;
 
 export class DbCostLedger implements CostLedger {
-  constructor(private readonly orm: Orm) {}
+  /** Con `demo`, el gasto queda marcado y fuera de las métricas. El tope diario es el mismo. */
+  constructor(
+    private readonly orm: Orm,
+    private readonly options: { demo?: boolean } = {},
+  ) {}
 
   async spentUsd(userId: string | null, day: LocalDay): Promise<number> {
     const [row] = await this.orm
@@ -35,6 +39,7 @@ export class DbCostLedger implements CostLedger {
       cacheReadTokens: entry.usage.cacheReadTokens,
       cacheWriteTokens: entry.usage.cacheWriteTokens,
       costUsdMicros: Math.ceil(entry.costUsd * MICROS_PER_USD),
+      demo: this.options.demo ?? false,
     });
   }
 }

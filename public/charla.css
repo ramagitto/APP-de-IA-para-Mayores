@@ -1066,3 +1066,52 @@ main {
 [hidden] {
   display: none !important;
 }
+
+/* ---------- Modo demo (solo en la página de un participante demo) ---------- */
+
+/* El cartel va dentro del encabezado, que queda fijo arriba: siempre se ve. */
+.demo .top {
+  flex-wrap: wrap;
+}
+
+.demo-banner {
+  flex-basis: 100%;
+  order: -1;
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.5rem;
+  background: #ffd84d;
+  color: #2b2100;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.demo-menu {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 3px dashed #e0b800;
+}
+
+.demo-title,
+.mockup-tag {
+  display: inline-block;
+  margin: 0 0 0.5rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.5rem;
+  background: #ffd84d;
+  color: #2b2100;
+  font-weight: 700;
+}
+
+.demo-lesson-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.demo-lesson-list button {
+  text-align: left;
+}
+
+.sponsor-list {
+  padding-left: 1.2rem;
+}

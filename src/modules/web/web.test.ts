@@ -16,21 +16,38 @@ import type { WebBackend, WebMessage, WebState } from './web-backend.js';
 import { parseRange, type VoiceInput } from './web.routes.js';
 
 const token = generateToken();
-const participant: Participant = { id: '6f1c0e1a-3b9e-4a59-9a6e-2d1f6f0b7a10', code: 'P01' };
+const participant: Participant = {
+  id: '6f1c0e1a-3b9e-4a59-9a6e-2d1f6f0b7a10',
+  code: 'P01',
+  demo: false,
+};
+const demoToken = generateToken();
+const demoParticipant: Participant = {
+  id: '0b8d3f52-7c1e-4f0a-8d2b-5e9a1c3f7b20',
+  code: 'D01',
+  demo: true,
+};
 const audioId = 'b'.repeat(64);
 
 function setup(options: { reply?: Partial<RouterReply>; voiceInput?: VoiceInput } = {}) {
   const handled: WebMessage[] = [];
+  const demoCalls: string[] = [];
   const opened: boolean[] = [];
   const logs: string[] = [];
   const audioStore = new InMemoryAudioStore();
   const state: WebState = { phase: 'active', streak: 2, lesson: { kind: 'done_today' } };
 
   const backend: WebBackend = {
-    findParticipant: async (candidate) => (candidate === token ? participant : undefined),
-    state: async (_participant, _now, flags) => {
+    findParticipant: async (candidate) =>
+      candidate === token ? participant : candidate === demoToken ? demoParticipant : undefined,
+    state: async (who, _now, flags) => {
       opened.push(Boolean(flags?.opened));
-      return state;
+      return who.demo ? { ...state, demo: { lessons: [] } } : state;
+    },
+    demo: async (who, action) => {
+      demoCalls.push(action);
+      if (!who.demo) return 'not_demo';
+      return { status: { streak: 7 }, forgotten: false, messages: [] };
     },
     handle: async (_participant, message) => {
       handled.push(message);
@@ -63,7 +80,7 @@ function setup(options: { reply?: Partial<RouterReply>; voiceInput?: VoiceInput 
     },
   });
 
-  return { app, handled, opened, logs, audioStore };
+  return { app, handled, opened, logs, audioStore, demoCalls };
 }
 
 describe('tokens y códigos', () => {
@@ -283,6 +300,51 @@ describe('API del piloto web', () => {
   });
 });
 
+describe('modo demo', () => {
+  const DEMO_MARKS = ['Modo demo', 'demo-banner', 'demo-menu', 'demo-lessons', 'screen-sponsor'];
+
+  it('un participante real no ve nada del modo demo', async () => {
+    const { app, demoCalls } = setup();
+
+    const page = await app.inject({ method: 'GET', url: `/p/${token}` });
+    for (const mark of DEMO_MARKS) expect(page.body).not.toContain(mark);
+
+    const state = await app.inject({ method: 'GET', url: `/p/${token}/estado` });
+    expect(state.json()).not.toHaveProperty('demo');
+
+    const shortcut = await app.inject({
+      method: 'POST',
+      url: `/p/${token}/demo`,
+      payload: { action: 'progress' },
+    });
+    expect(shortcut.statusCode).toBe(404);
+    // La ruta ni siquiera llega al backend: el avance de la persona no se toca.
+    expect(demoCalls).toEqual([]);
+  });
+
+  it('el participante demo ve el cartel, el menú y la maqueta del padrino', async () => {
+    const { app } = setup();
+
+    const page = await app.inject({ method: 'GET', url: `/p/${demoToken}` });
+    for (const mark of DEMO_MARKS) expect(page.body).toContain(mark);
+    expect(page.body).toContain('Función proyectada, todavía no construida');
+  });
+
+  it('corre los atajos y valida el pedido', async () => {
+    const { app, demoCalls } = setup();
+    const post = (payload: object) =>
+      app.inject({ method: 'POST', url: `/p/${demoToken}/demo`, payload });
+
+    const ok = await post({ action: 'progress' });
+    expect(ok.statusCode).toBe(200);
+    expect(ok.json().state.demo).toBeDefined();
+    expect(demoCalls).toEqual(['progress']);
+
+    expect((await post({ action: 'borrar-todo' })).statusCode).toBe(400);
+    expect((await post({ action: 'lesson', lessonId: '../x' })).statusCode).toBe(400);
+  });
+});
+
 describe('recordatorios', () => {
   const texts = loadReminderTexts();
   const link = `https://charla.example.org/p/${token}`;
@@ -294,6 +356,18 @@ describe('recordatorios', () => {
         'revision: borrador\ninvitacion: Un texto sin el link para nadie.\nleccion_del_dia: Hoy hay lección {link}\nleccion_sin_terminar: Seguimos con la lección {link}',
       ),
     ).toThrow('{link}');
+  });
+
+  it('nunca incluye a los participantes demo', () => {
+    const reminders = buildReminders(
+      [
+        { code: 'P01', link, state: { phase: 'welcome', streak: 0 } },
+        { code: 'D01', demo: true, link, state: { phase: 'welcome', streak: 0 } },
+      ],
+      texts,
+    );
+
+    expect(reminders.map((reminder) => reminder.code)).toEqual(['P01']);
   });
 
   it('arma un texto por persona y no le escribe a quien no hace falta', () => {

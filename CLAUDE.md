@@ -23,6 +23,7 @@ Curso de IA para personas de 65+, por la web (piloto) y WhatsApp (para después)
 - `npm run whatsapp:simulate -- "hola"`: manda al webhook local un mensaje firmado, con `WHATSAPP_PROVIDER=fake`.
 - `npm run support -- listar`: pedidos de AYUDA y avisos de cuidado (también `responder <id> "texto"` y `cerrar <id>`).
 - `npm run pilot -- crear 10`: links del piloto web (también `listar`, `recordatorios`, `nuevo-link <código>` y `baja <código>`).
+- `npm run pilot -- demo`: link de un participante demo para presentaciones, sin espera, con atajos y fuera de las métricas ([ADR 0014](docs/adr/0014-modo-demo.md)).
 - `npm run metrics`: indicadores del piloto y CSV en `var/metricas/`.
 - Contra producción: `CHARLA_ENV_FILE=.env.produccion` antes del comando.
 - Con `npm run dev`, el simulador está en `http://localhost:3000/simulador` (solo con `APP_ENV=local`).

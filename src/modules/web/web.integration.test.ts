@@ -101,6 +101,7 @@ describe('participantes del piloto web', () => {
     expect(await findParticipantByToken(orm, first!.token)).toEqual({
       id: first!.id,
       code: first!.code,
+      demo: false,
     });
   });
 
