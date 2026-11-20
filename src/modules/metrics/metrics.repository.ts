@@ -1,4 +1,4 @@
-import { asc, sql } from 'drizzle-orm';
+import { asc, eq, sql } from 'drizzle-orm';
 import type { Orm } from '../../shared/db/database.js';
 import { productEvents, usageCosts } from '../../shared/db/schema.js';
 import type { ProductEvent } from './product-events.js';
@@ -15,7 +15,7 @@ export async function loadEvents(orm: Orm): Promise<ProductEvent[]> {
   }));
 }
 
-/** Costo de IA por persona y total, en dólares. */
+/** Costo de IA por persona y total, en dólares. Sin el gasto de los participantes demo. */
 export async function loadCosts(
   orm: Orm,
 ): Promise<{ bySubject: Map<string, number>; totalUsd: number }> {
@@ -25,6 +25,7 @@ export async function loadCosts(
       micros: sql<string>`sum(${usageCosts.costUsdMicros})`,
     })
     .from(usageCosts)
+    .where(eq(usageCosts.demo, false))
     .groupBy(usageCosts.userId);
 
   const bySubject = new Map<string, number>();

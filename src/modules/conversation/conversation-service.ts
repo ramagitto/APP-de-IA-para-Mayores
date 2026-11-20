@@ -1,5 +1,7 @@
 import type { Orm } from '../../shared/db/database.js';
 import {
+  abandonAttempt,
+  applyPracticeReview,
   type LessonAttempt,
   type OutgoingMessage,
   startAttempt,
@@ -58,6 +60,11 @@ export interface ConversationDeps {
   tutor: Tutor;
   voice: VoiceService;
   events?: EventRecorder;
+  /**
+   * Modo demo, para presentaciones: varias lecciones por día (también fines de semana y
+   * feriados) y el número de lección según su lugar en el curso. Las capas de seguridad no cambian.
+   */
+  demo?: boolean;
 }
 
 // Dónde está la persona hoy. La web lo usa al abrirse, para mostrar el botón que corresponde.
@@ -109,6 +116,7 @@ export class ConversationService {
 
     if (stored && open) {
       const practice = stored.attempt.state === 'awaiting_practice';
+      const lessonNumber = this.deps.demo ? lessons.indexOf(open) + 1 : completed.length + 1;
       return {
         streak: shownStreak,
         progress,
@@ -116,7 +124,7 @@ export class ConversationService {
           kind: 'in_lesson',
           step: practice ? 'practice' : 'challenge',
           lessonTitle: open.title,
-          lessonNumber: completed.length + 1,
+          lessonNumber,
           prompt: practice
             ? open.introScript
             : `${open.challengeText} ${open.challengeSafetyReminder}`,
@@ -124,7 +132,7 @@ export class ConversationService {
       };
     }
 
-    if (!canStartLesson(streak, now, calendar)) {
+    if (!this.canStart(streak, now)) {
       return { streak: shownStreak, progress, lesson: { kind: 'done_today' } };
     }
 
@@ -134,8 +142,59 @@ export class ConversationService {
     return {
       streak: shownStreak,
       progress,
-      lesson: { kind: 'ready', lessonTitle: next.title, lessonNumber: completed.length + 1 },
+      lesson: {
+        kind: 'ready',
+        lessonTitle: next.title,
+        lessonNumber: this.deps.demo ? lessons.indexOf(next) + 1 : completed.length + 1,
+      },
     };
+  }
+
+  /**
+   * Solo modo demo: deja a la persona en una lección puntual, en la práctica o en el desafío.
+   * Usa el mismo motor que el curso; la lección que estaba en curso queda abandonada.
+   */
+  async startDemoLesson(
+    userId: string,
+    lessonId: string,
+    now: Date,
+    step: 'practice' | 'challenge' = 'practice',
+  ): Promise<ConversationReply> {
+    if (!this.deps.demo) throw new Error('Solo disponible en modo demo');
+    const { orm, lessons, calendar } = this.deps;
+    const lesson = lessons.find((candidate) => candidate.id === lessonId);
+    if (!lesson) throw new Error('No existe esa lección');
+
+    const stored = await findOpenAttempt(orm, userId);
+    if (stored) await updateAttempt(orm, stored.id, abandonAttempt(stored.attempt, now));
+
+    let result = startAttempt({ lesson, trigger: 'user_message', now });
+    if (step === 'challenge') {
+      const reviewed = applyPracticeReview(result.attempt, lesson, {
+        outcome: 'good',
+        feedback: '',
+      });
+      result = {
+        attempt: reviewed.attempt,
+        messages: reviewed.messages.filter((message) => message.kind === 'challenge'),
+      };
+    }
+    await insertAttempt(orm, userId, result.attempt);
+
+    return {
+      messages: await this.withAudio(result.messages, false, userId),
+      status: {
+        lessonId: lesson.id,
+        state: result.attempt.state,
+        paidMessagesUsed: result.attempt.paidMessagesUsed,
+        streak: currentStreak(await getStreak(orm, userId), now, calendar),
+      },
+    };
+  }
+
+  // En el modo demo no hay que esperar al día siguiente.
+  private canStart(streak: Streak, now: Date): boolean {
+    return this.deps.demo === true || canStartLesson(streak, now, this.deps.calendar);
   }
 
   async handle(incoming: LessonMessage): Promise<ConversationReply> {
@@ -170,6 +229,7 @@ export class ConversationService {
   ): Promise<TurnOutcome> {
     const { orm, lessons, calendar, tutor } = this.deps;
     const stored = await findOpenAttempt(orm, userId);
+
     const lesson = stored && lessons.find((candidate) => candidate.id === stored.attempt.lessonId);
 
     // Hay una lección en curso: sigue el motor, que también se ocupa de los mensajes de cuidado.
@@ -204,7 +264,7 @@ export class ConversationService {
     if (careMessage)
       return { messages: [{ kind: 'care', format: 'text', text: careMessage }], streak };
 
-    if (!canStartLesson(streak, now, calendar)) {
+    if (!this.canStart(streak, now)) {
       return { messages: [info(INFO_MESSAGES.doneToday)], streak };
     }
 

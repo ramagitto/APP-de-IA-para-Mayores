@@ -5,6 +5,7 @@ import { readLessonSources, validateLessons } from '../src/modules/lessons/lesso
 import {
   CONSENT_FILE,
   WEB_CONSENT_FILE,
+  WEB_BUTTONS,
   type ConsentContent,
   parseConsentContent,
 } from '../src/modules/onboarding/consent-content.js';
@@ -50,7 +51,9 @@ try {
 const consents: ConsentContent[] = [];
 for (const file of [CONSENT_FILE, WEB_CONSENT_FILE]) {
   try {
-    consents.push(parseConsentContent(readFileSync(file, 'utf8')));
+    // La web se responde con botones: el pedido tiene que nombrarlos, no las palabras clave.
+    const replies = file === WEB_CONSENT_FILE ? WEB_BUTTONS : undefined;
+    consents.push(parseConsentContent(readFileSync(file, 'utf8'), replies));
   } catch (error) {
     errors.push(`${file}: ${(error as Error).message}`);
   }

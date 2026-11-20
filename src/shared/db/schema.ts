@@ -122,6 +122,8 @@ export const usageCosts = pgTable(
     cacheWriteTokens: integer('cache_write_tokens').notNull(),
     // Millonésimos de dólar, redondeados hacia arriba: evita errores de redondeo con decimales.
     costUsdMicros: integer('cost_usd_micros').notNull(),
+    // Gasto de un participante demo (presentaciones): queda fuera de las métricas del piloto.
+    demo: boolean().notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index('usage_costs_user_day').on(table.userId, table.day)],
@@ -204,9 +206,12 @@ export const outboundMessages = pgTable(
 // recordatorio. El código (P01, P02...) es lo único que ve el equipo: la relación entre el
 // código y la persona queda fuera del sistema. Nada de nombres ni teléfonos.
 // Con la BAJA, el token se borra y la fila queda cerrada: así el código no se reutiliza.
+// `demo`: participante para mostrar la app en presentaciones (D01, D02...). Se fija al crearlo
+// y no se puede cambiar: ninguna ruta lo modifica. Queda fuera de métricas y recordatorios.
 export const webParticipants = pgTable('web_participants', {
   id: uuid().primaryKey().defaultRandom(),
   code: text().notNull().unique(),
+  demo: boolean().notNull().default(false),
   tokenHash: text('token_hash').unique(),
   tokenEncrypted: text('token_encrypted'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),

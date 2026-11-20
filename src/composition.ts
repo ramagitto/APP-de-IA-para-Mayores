@@ -3,7 +3,13 @@ import type { Env } from './config/env.js';
 import { ConversationService } from './modules/conversation/conversation-service.js';
 import { MessageRouter } from './modules/conversation/message-router.js';
 import { loadLessons } from './modules/lessons/lesson.loader.js';
-import { type Channel, DbEventRecorder } from './modules/metrics/product-events.js';
+import { DemoService } from './modules/demo/demo-service.js';
+import {
+  type Channel,
+  DbEventRecorder,
+  type EventRecorder,
+  NO_EVENTS,
+} from './modules/metrics/product-events.js';
 import { loadConsentContent, WEB_CONSENT_FILE } from './modules/onboarding/consent-content.js';
 import {
   OnboardingService,
@@ -28,6 +34,8 @@ export interface Services {
   webRouter: MessageRouter;
   audioStore: AudioStore;
   voice: VoiceService;
+  /** Modo demo de la web: su propio router, sin métricas y con el gasto marcado como demo. */
+  demo: DemoService;
 }
 
 // Arma y conecta los servicios. Lo usan el servidor y los scripts: un solo lugar donde cambiar.
@@ -43,21 +51,43 @@ export function buildServices(env: Env, orm: Orm): Services {
   const tutor = createTutor(env, ledger);
 
   // Cada canal tiene su texto de consentimiento y anota sus eventos con su nombre.
-  function buildRouter(channel: Channel, consentFile?: string): MessageRouter {
+  function buildRouter(
+    channel: Channel,
+    consentFile?: string,
+    demo?: { events: EventRecorder; tutor: typeof tutor; voice: VoiceService },
+  ): MessageRouter {
     const consent = loadConsentContent(consentFile);
-    const events = new DbEventRecorder(orm, channel);
+    const events = demo?.events ?? new DbEventRecorder(orm, channel);
     const consentTypes = channel === 'web' ? WEB_CONSENTS : WHATSAPP_CONSENTS;
+    const channelVoice = demo?.voice ?? voice;
 
     return new MessageRouter({
       orm,
       keys,
       consent,
       onboarding: new OnboardingService({ orm, keys, consent, consentTypes, events }),
-      conversation: new ConversationService({ orm, lessons, calendar, tutor, voice, events }),
-      voice,
+      conversation: new ConversationService({
+        orm,
+        lessons,
+        calendar,
+        tutor: demo?.tutor ?? tutor,
+        voice: channelVoice,
+        events,
+        demo: Boolean(demo),
+      }),
+      voice: channelVoice,
       events,
     });
   }
+
+  // El demo usa los mismos proveedores, capas de seguridad y tope diario; solo cambia que no
+  // anota eventos y que su gasto queda marcado para no contarlo en las métricas.
+  const demoLedger = new DbCostLedger(orm, { demo: true });
+  const demoRouter = buildRouter('web', WEB_CONSENT_FILE, {
+    events: NO_EVENTS,
+    tutor: createTutor(env, demoLedger),
+    voice: createVoiceService(env, demoLedger, audioStore),
+  });
 
   return {
     orm,
@@ -66,5 +96,6 @@ export function buildServices(env: Env, orm: Orm): Services {
     webRouter: buildRouter('web', WEB_CONSENT_FILE),
     audioStore,
     voice,
+    demo: new DemoService({ orm, keys, router: demoRouter, lessons, calendar }),
   };
 }

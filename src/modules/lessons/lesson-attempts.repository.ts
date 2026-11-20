@@ -49,6 +49,11 @@ export async function findOpenAttempt(
   return row && toStored(row);
 }
 
+/** Solo para el modo demo: borra todos los intentos de la persona. */
+export async function deleteAttempts(orm: Orm, userId: string): Promise<void> {
+  await orm.delete(lessonAttempts).where(eq(lessonAttempts.userId, userId));
+}
+
 export async function listCompletedLessonIds(orm: Orm, userId: string): Promise<string[]> {
   const rows = await orm
     .selectDistinct({ lessonId: lessonAttempts.lessonId })

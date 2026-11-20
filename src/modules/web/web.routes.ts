@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import type { RouterReply } from '../conversation/message-router.js';
+import { DEMO_ACTIONS } from '../demo/demo-service.js';
 import type { AudioStore } from '../voice/audio-store.js';
 import { RateLimiter } from '../whatsapp/rate-limiter.js';
 import { appIconPng, APP_ICON_SVG } from './icons.js';
@@ -41,6 +42,19 @@ const messageSchema = z
   .refine((body) => body.text || body.audio, 'Hace falta un texto o un audio');
 
 const AUDIO_ID = /^[0-9a-f]{64}$/;
+
+const demoSchema = z.strictObject({
+  action: z.enum(DEMO_ACTIONS),
+  lessonId: z
+    .string()
+    .regex(/^[a-z0-9-]{1,80}$/)
+    .optional(),
+});
+
+const DEMO_ERRORS = {
+  needs_consent: 'Primero tocá «Empezar» y después «Acepto».',
+  unknown_lesson: 'No existe esa lección.',
+};
 
 // La página solo carga lo propio: ningún script ni recurso de terceros.
 const SECURITY_HEADERS = {
@@ -175,7 +189,9 @@ export function registerWebRoutes(app: FastifyInstance, deps: WebDeps): void {
         .type('text/html; charset=utf-8')
         .send(notFoundPage(version));
     }
-    return privateReply(reply).type('text/html; charset=utf-8').send(webPage(token, version));
+    return privateReply(reply)
+      .type('text/html; charset=utf-8')
+      .send(webPage(token, version, { demo: participant.demo }));
   });
 
   app.get<{ Params: { token: string } }>(
@@ -230,6 +246,35 @@ export function registerWebRoutes(app: FastifyInstance, deps: WebDeps): void {
       return privateReply(reply).send(present(token, result, state));
     },
   );
+
+  // Atajos del modo demo. Para un participante real, esta ruta no existe: responde 404.
+  app.post<{ Params: { token: string } }>('/p/:token/demo', async (request, reply) => {
+    const { token } = request.params;
+    const participant = await participantOr404(token, reply);
+    if (!participant) return reply;
+    if (!participant.demo) return privateReply(reply).code(404).send({ error: 'No existe' });
+
+    const parsed = demoSchema.safeParse(request.body);
+    if (!parsed.success) return privateReply(reply).code(400).send({ error: 'Pedido inválido' });
+    if (!limiter.allow(participant.id, now().getTime())) {
+      return privateReply(reply).code(429).send({ error: 'Demasiados mensajes' });
+    }
+
+    const at = now();
+    const result = await deps.backend.demo(
+      participant,
+      parsed.data.action,
+      at,
+      parsed.data.lessonId,
+    );
+    if (result === 'not_demo') return privateReply(reply).code(404).send({ error: 'No existe' });
+    if (typeof result === 'string') {
+      return privateReply(reply).code(409).send({ error: DEMO_ERRORS[result] });
+    }
+
+    const state = await deps.backend.state(participant, at);
+    return privateReply(reply).send(present(token, result, state));
+  });
 
   app.get<{ Params: { token: string; id: string } }>(
     '/p/:token/audio/:id',

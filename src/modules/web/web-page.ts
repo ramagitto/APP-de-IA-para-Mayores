@@ -51,7 +51,8 @@ const icon = (name: string) =>
 
 // El token ya se validó (43 caracteres de base64url): se puede poner en el HTML sin escaparlo.
 // Hay una pantalla por momento del curso; charla.js muestra la que corresponde.
-export function webPage(token: string, version: string): string {
+export function webPage(token: string, version: string, options: { demo?: boolean } = {}): string {
+  const demo = options.demo === true;
   return `<!doctype html>
 <html lang="es-AR">
 <head>
@@ -64,9 +65,10 @@ ${head(
   version,
 )}
 </head>
-<body>
+<body${demo ? ' class="demo"' : ''}>
 ${ICONS}
 <header class="top">
+  ${demo ? DEMO_BANNER : ''}
   <div class="brand">${LOGO}<span>Charlá</span></div>
   <button type="button" id="menu-button" class="menu-button" aria-expanded="false" aria-controls="menu">${icon('menu')}<span>Menú</span></button>
 </header>
@@ -134,7 +136,7 @@ ${ICONS}
     </article>
   </section>
 
-  <section id="screen-end" class="screen end" hidden aria-labelledby="end-title">
+${demo ? SPONSOR_MOCKUP : ''}  <section id="screen-end" class="screen end" hidden aria-labelledby="end-title">
     <div class="hero">${LOGO}</div>
     <h1 id="end-title"></h1>
     <p id="end-text" class="lead"></p>
@@ -181,8 +183,9 @@ ${ICONS}
     <button type="button" class="menu-item" data-action="install">${icon('phone')}Dejar Charlá en la pantalla de inicio</button>
     <button type="button" class="menu-item" data-action="help">${icon('people')}Pedir ayuda a una persona</button>
     <button type="button" class="menu-item danger" data-action="leave">${icon('leave')}Dejar el curso y borrar mis datos</button>
-  </div>
+${demo ? DEMO_MENU : ''}  </div>
 </div>
+${demo ? DEMO_LESSONS : ''}
 
 <div id="dialog" class="dialog" hidden>
   <div class="dialog-box" role="dialog" aria-modal="true" aria-labelledby="dialog-text">
@@ -195,6 +198,56 @@ ${ICONS}
 </html>
 `;
 }
+
+// ---------- Modo demo ----------
+// Solo va en la página de un participante demo: un participante real no recibe nada de esto.
+
+const DEMO_BANNER = `<p class="demo-banner" role="note"><strong>Modo demo</strong> · Datos de prueba, no son de personas reales</p>
+`;
+
+const DEMO_MENU = `    <div class="demo-menu" role="group" aria-labelledby="demo-title">
+      <p id="demo-title" class="demo-title">Modo demo</p>
+      <button type="button" class="menu-item" data-action="demo-lessons">${icon('book')}Ir a la lección…</button>
+      <button type="button" class="menu-item" data-action="demo-restart">${icon('leave')}Volver a empezar (desde el permiso)</button>
+      <button type="button" class="menu-item" data-action="demo-antiscam">${icon('shield')}Ir a una lección de antiestafas</button>
+      <button type="button" class="menu-item" data-action="demo-challenge">${icon('target')}Ver el desafío y la racha</button>
+      <button type="button" class="menu-item" data-action="demo-progress">${icon('flame')}Simular progreso: racha de 7 y 6 lecciones</button>
+      <button type="button" class="menu-item" data-action="demo-end">${icon('check')}Ver el final del nivel 1</button>
+      <button type="button" class="menu-item" data-action="demo-sponsor">${icon('people')}Vista del padrino (próximamente)</button>
+    </div>
+`;
+
+const DEMO_LESSONS = `<div id="demo-lessons" class="sheet" hidden>
+  <div class="sheet-box" role="dialog" aria-modal="true" aria-labelledby="demo-lessons-title">
+    <div class="sheet-head">
+      <h2 id="demo-lessons-title">Ir a la lección…</h2>
+      <button type="button" class="icon-button" data-close aria-label="Cerrar">${icon('close')}</button>
+    </div>
+    <div id="demo-lesson-list" class="demo-lesson-list"></div>
+  </div>
+</div>
+`;
+
+// Maqueta de una función proyectada (ADR 0006: el padrino recibe un email). No está construida:
+// los datos son de ejemplo y no salen de la base.
+const SPONSOR_MOCKUP = `  <section id="screen-sponsor" class="screen" hidden aria-labelledby="sponsor-title">
+    <p class="mockup-tag">Maqueta · Función proyectada, todavía no construida · Datos de ejemplo</p>
+    <p class="eyebrow">Vista del padrino (próximamente)</p>
+    <h1 id="sponsor-title">Resumen de la semana</h1>
+    <p class="lead">Así le llegaría por email a la persona que acompaña.</p>
+    <article class="card prose">
+      <h2>Tu familiar avanzó un montón</h2>
+      <ul class="sponsor-list">
+        <li><strong>4 de 5</strong> lecciones de la semana</li>
+        <li><strong>7</strong> lecciones seguidas</li>
+        <li><strong>Aprendió:</strong> qué es una IA, que se puede equivocar y cómo reconocer un mensaje sospechoso</li>
+      </ul>
+      <h2>Para charlar juntos</h2>
+      <p>Preguntale qué haría si le llega un mensaje que pide un código. Escuchalo sin apurarlo.</p>
+      <p class="fineprint">Charlá nunca comparte lo que la persona escribe: solo el avance.</p>
+    </article>
+  </section>
+`;
 
 export function notFoundPage(version: string): string {
   return `<!doctype html>
